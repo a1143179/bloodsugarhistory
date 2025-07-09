@@ -11,6 +11,34 @@ A comprehensive blood sugar tracking application with React frontend and .NET ba
 - **.NET 9 SDK** - For backend API
 - **Git Bash** (recommended) or **Command Prompt/PowerShell**
 
+### First-Time Setup
+
+1. **Clone the repository**:
+   ```bash
+   git clone <repository-url>
+   cd bloodsugerhistory
+   ```
+
+2. **Set up development environment**:
+   ```bash
+   # On Windows
+   setup-dev.bat
+   
+   # On Linux/Mac/Git Bash
+   ./setup-dev.sh
+   ```
+
+3. **Add your Google OAuth credentials** to `backend/appsettings.Development.json`
+
+4. **Start the application**:
+   ```bash
+   # On Windows
+   start-dev.bat
+   
+   # On Linux/Mac/Git Bash
+   ./start-dev.sh
+   ```
+
 ### Environment Setup
 
 #### Google OAuth Configuration
@@ -19,7 +47,9 @@ This project uses Google OAuth for authentication. You need to set up Google OAu
 
 1. **For Local Development**:
    - Copy `backend/appsettings.Development.template.json` to `backend/appsettings.Development.json`
-   - Add your Google OAuth Client ID and Client Secret to the file
+   - Replace the placeholder values with your actual Google OAuth credentials:
+     - `YOUR_GOOGLE_CLIENT_ID_HERE` → Your actual Google Client ID
+     - `YOUR_GOOGLE_CLIENT_SECRET_HERE` → Your actual Google Client Secret
    - The `appsettings.Development.json` file is gitignored to keep secrets local
 
 2. **For Production/GitHub**:
@@ -28,9 +58,53 @@ This project uses Google OAuth for authentication. You need to set up Google OAu
      - `GOOGLE_CLIENT_SECRET`
    - The application will automatically use these environment variables in production
 
+#### Setting Up Google OAuth Credentials
+
+1. **Go to Google Cloud Console**: https://console.cloud.google.com/
+2. **Create a new project** or select an existing one
+3. **Enable the Google+ API**:
+   - Go to "APIs & Services" > "Library"
+   - Search for "Google+ API" and enable it
+4. **Create OAuth 2.0 credentials**:
+   - Go to "APIs & Services" > "Credentials"
+   - Click "Create Credentials" > "OAuth 2.0 Client IDs"
+   - Choose "Web application"
+   - Add authorized redirect URIs:
+     - `http://localhost:3000/api/auth/callback` (for development)
+     - `https://yourdomain.com/api/auth/callback` (for production)
+   - Add authorized JavaScript origins:
+     - `http://localhost:3000` (for development)
+     - `https://yourdomain.com` (for production)
+5. **Copy the credentials**:
+   - Copy the Client ID and Client Secret
+   - Paste them into your `backend/appsettings.Development.json` file
+
 #### Development Environment Setup
 
-#### Option 1: Using Git Bash (Recommended)
+#### Step 1: Initial Setup
+Before starting the application, you need to set up your development environment:
+
+**Option A: Using Setup Scripts (Recommended)**
+```bash
+# On Windows
+setup-dev.bat
+
+# On Linux/Mac/Git Bash
+./setup-dev.sh
+```
+
+**Option B: Manual Setup**
+```bash
+# Copy the template file
+cp backend/appsettings.Development.template.json backend/appsettings.Development.json
+
+# Edit the file and add your Google OAuth credentials
+# Replace YOUR_GOOGLE_CLIENT_ID_HERE and YOUR_GOOGLE_CLIENT_SECRET_HERE
+```
+
+#### Step 2: Start the Application
+
+**Option 1: Using Git Bash (Recommended)**
 ```bash
 # Clone the repository
 git clone <repository-url>
@@ -120,6 +194,102 @@ If you prefer to start services manually:
   - Username: `postgres`
   - Password: `password`
 
+## Production Deployment
+
+### Docker Deployment
+
+The application is containerized and ready for production deployment. The Dockerfile creates a multi-stage build that:
+
+1. **Builds the React frontend** and creates static files
+2. **Builds the .NET backend** 
+3. **Creates a final image** that serves both frontend and backend on port 3000
+
+#### Quick Deployment
+
+```bash
+# Build the Docker image
+docker build -t bloodsugar-app .
+
+# Run the container
+docker run -d \
+  --name bloodsugar-app \
+  -p 3000:3000 \
+  -e GOOGLE_CLIENT_ID=your_google_client_id \
+  -e GOOGLE_CLIENT_SECRET=your_google_client_secret \
+  -e ConnectionStrings__DefaultConnection="your_production_database_connection_string" \
+  bloodsugar-app
+```
+
+#### Environment Variables for Production
+
+Set these environment variables in your production environment:
+
+```bash
+# Required for Google OAuth
+GOOGLE_CLIENT_ID=your_google_client_id
+GOOGLE_CLIENT_SECRET=your_google_client_secret
+
+# Database connection
+ConnectionStrings__DefaultConnection=your_production_database_connection_string
+
+# Application settings
+ASPNETCORE_ENVIRONMENT=Production
+ASPNETCORE_URLS=http://+:3000
+```
+
+#### Google OAuth Production Setup
+
+1. **Update Google OAuth Console**:
+   - Add your production domain to "Authorized redirect URIs":
+     - `https://yourdomain.com/api/auth/callback`
+   - Add your production domain to "Authorized JavaScript origins":
+     - `https://yourdomain.com`
+
+2. **Environment Variables**:
+   - Set `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` in your production environment
+   - The application automatically detects the current domain and uses appropriate redirect URIs
+
+#### Production Features
+
+- **Automatic HTTPS Detection**: Cookies and security settings automatically adjust for HTTPS in production
+- **Dynamic OAuth URLs**: Redirect URIs are automatically determined based on the current request
+- **Static File Serving**: Frontend is built and served as static files by the backend
+- **Single Port**: Everything runs on port 3000, eliminating CORS and session issues
+- **Environment-Agnostic**: Works in any environment without configuration changes
+
+#### Cloud Platform Deployment
+
+**Azure App Service**:
+```bash
+# Deploy to Azure
+az webapp up --name your-app-name --resource-group your-resource-group --runtime "DOTNETCORE:9.0"
+```
+
+**AWS ECS/Fargate**:
+```bash
+# Build and push to ECR
+docker build -t bloodsugar-app .
+docker tag bloodsugar-app:latest your-ecr-repo:latest
+docker push your-ecr-repo:latest
+```
+
+**Google Cloud Run**:
+```bash
+# Deploy to Cloud Run
+gcloud run deploy bloodsugar-app --image gcr.io/your-project/bloodsugar-app --platform managed
+```
+
+### Production Database Setup
+
+For production, use a managed PostgreSQL service:
+
+- **Azure Database for PostgreSQL**
+- **AWS RDS for PostgreSQL**
+- **Google Cloud SQL**
+- **Heroku Postgres**
+
+Update the connection string in your production environment variables.
+
 ## Features
 
 - **User Authentication**: Email/password registration and login
@@ -136,6 +306,14 @@ If you prefer to start services manually:
 2. **Docker Not Running**: Make sure Docker Desktop is started before running the scripts
 3. **Git Bash lsof Error**: The updated scripts now use Windows-compatible commands
 4. **Database Connection**: Ensure PostgreSQL container is running and accessible
+5. **Google OAuth "Missing required parameter: client_id"**: 
+   - Make sure you've copied `backend/appsettings.Development.template.json` to `backend/appsettings.Development.json`
+   - Replace the placeholder values with your actual Google OAuth credentials
+   - Ensure your Google OAuth redirect URIs include `http://localhost:3000/api/auth/callback`
+6. **Google OAuth "redirect_uri_mismatch"**: 
+   - Check that your Google OAuth console has the correct redirect URIs configured
+   - For development: `http://localhost:3000/api/auth/callback`
+   - For production: `https://yourdomain.com/api/auth/callback`
 
 ### Windows-Specific Notes
 
