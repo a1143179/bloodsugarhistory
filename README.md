@@ -24,7 +24,7 @@ A comprehensive blood sugar tracking application with React frontend and .NET ba
    # On Windows
    setup-dev.bat
    
-   # On Linux/Mac/Git Bash
+   # On Linux/Mac
    ./setup-dev.sh
    ```
 
@@ -35,9 +35,11 @@ A comprehensive blood sugar tracking application with React frontend and .NET ba
    # On Windows
    start-dev.bat
    
-   # On Linux/Mac/Git Bash
+   # On Linux/Mac
    ./start-dev.sh
    ```
+
+5. **Access the application** at `http://localhost:3000`
 
 ### Environment Setup
 
@@ -104,36 +106,13 @@ cp backend/appsettings.Development.template.json backend/appsettings.Development
 
 #### Step 2: Start the Application
 
-**Option 1: Using Git Bash (Recommended)**
-```bash
-# Clone the repository
-git clone <repository-url>
-cd bloodsugerhistory
-
-# Start all services (database, backend, frontend build)
-./start-dev.sh
-
-# Start only the database
-./start-dev.sh --db
-
-# Start only the backend (requires database running)
-./start-dev.sh --backend
-
-# Build frontend and copy static files to backend (no servers started)
-./start-dev.sh --frontend
-
-# You can combine arguments to start any combination of services:
-./start-dev.sh --db --backend    # Start database and backend only
-./start-dev.sh --backend --frontend # Start backend and build frontend only
-```
-
-#### Option 2: Using Windows Command Prompt/PowerShell
+**Windows (Command Prompt/PowerShell)**
 ```cmd
 # Clone the repository
 git clone <repository-url>
 cd bloodsugerhistory
 
-# Start all services (database, backend, frontend build)
+# Start full development environment (database, backend, React dev server)
 start-dev.bat
 
 # Start only the database
@@ -142,25 +121,63 @@ start-dev.bat --db
 # Start only the backend (requires database running)
 start-dev.bat --backend
 
-# Build frontend and copy static files to backend (no servers started)
+# Start only React dev server
 start-dev.bat --frontend
 
 # You can combine arguments to start any combination of services:
 start-dev.bat --db --backend    # Start database and backend only
-start-dev.bat --backend --frontend # Start backend and build frontend only
+start-dev.bat --backend --frontend # Start backend and React dev server only
+```
+
+**Linux/Mac (Terminal)**
+```bash
+# Clone the repository
+git clone <repository-url>
+cd bloodsugerhistory
+
+# Start full development environment (database, backend, React dev server)
+./start-dev.sh
+
+# Start only the database
+./start-dev.sh --db
+
+# Start only the backend (requires database running)
+./start-dev.sh --backend
+
+# Start only React dev server
+./start-dev.sh --frontend
+
+# You can combine arguments to start any combination of services:
+./start-dev.sh --db --backend    # Start database and backend only
+./start-dev.sh --backend --frontend # Start backend and React dev server only
 ```
 
 #### Script Modes Summary
-| Mode/Combination         | Command (Linux/Mac)                | Command (Windows)                | What it does                                                      |
-|-------------------------|-------------------------------------|----------------------------------|-------------------------------------------------------------------|
-| Full                    | ./start-dev.sh                      | start-dev.bat                    | Starts database, backend, builds frontend, serves everything       |
-| Database only           | ./start-dev.sh --db                 | start-dev.bat --db               | Starts only the PostgreSQL database                               |
-| Backend only            | ./start-dev.sh --backend            | start-dev.bat --backend          | Starts only the backend (requires database running)               |
-| Frontend only           | ./start-dev.sh --frontend           | start-dev.bat --frontend         | Builds frontend and copies static files to backend (no servers)    |
-| Custom (combine flags)  | ./start-dev.sh --db --backend       | start-dev.bat --db --backend     | Starts database and backend only                                  |
-| Custom (combine flags)  | ./start-dev.sh --backend --frontend | start-dev.bat --backend --frontend| Starts backend and builds frontend only                           |
+| Mode/Combination         | Command (Windows)                    | Command (Linux/Mac)                | What it does                                                      |
+|-------------------------|--------------------------------------|-----------------------------------|-------------------------------------------------------------------|
+| Full Development        | start-dev.bat                        | ./start-dev.sh                    | Starts database (port 5432), backend (port 3000), frontend (port 3001) |
+| Database only           | start-dev.bat --db                   | ./start-dev.sh --db               | Starts only the PostgreSQL database                               |
+| Backend only            | start-dev.bat --backend              | ./start-dev.sh --backend          | Starts only the backend (requires database running)               |
+| Frontend dev server     | start-dev.bat --frontend             | ./start-dev.sh --frontend         | Starts only React dev server (port 3001)                          |
+| Custom (combine flags)  | start-dev.bat --db --backend         | ./start-dev.sh --db --backend     | Starts database and backend only                                  |
 
 > **Note:** You can combine `--db`, `--backend`, and `--frontend` in any order to start any combination of services you need.
+
+### Development Architecture
+
+The application uses a **proxy development setup** for optimal development experience:
+
+- **Database**: Runs on port 5432 (PostgreSQL)
+- **Backend**: Runs on port 3000 with hot reload
+- **React Dev Server**: Runs on port 3001 with hot reload
+- **Proxy**: Backend forwards frontend requests to React dev server
+- **Single Domain**: All requests go through `localhost:3000` for proper session management
+
+This setup provides:
+- ✅ **Hot reload** for both frontend and backend
+- ✅ **Same-domain cookies** for authentication
+- ✅ **No CORS issues** during development
+- ✅ **Seamless development experience**
 
 ### Manual Setup (Alternative)
 
@@ -178,7 +195,7 @@ If you prefer to start services manually:
    dotnet run
    ```
 
-3. **Start Frontend**:
+3. **Start React Dev Server**:
    ```bash
    cd frontend
    npm install
@@ -187,8 +204,9 @@ If you prefer to start services manually:
 
 ## Access Points
 
-- **Frontend**: http://localhost:3000
-- **Backend API**: http://localhost:3000
+- **Application**: http://localhost:5000 (main entry point)
+- **Backend API**: http://localhost:5000/api
+- **React Dev Server**: http://localhost:3000 (direct access, not needed)
 - **Database**: localhost:5432
   - Database: `bloodsugar`
   - Username: `postgres`
@@ -256,6 +274,7 @@ ASPNETCORE_URLS=http://+:3000
 - **Static File Serving**: Frontend is built and served as static files by the backend
 - **Single Port**: Everything runs on port 3000, eliminating CORS and session issues
 - **Environment-Agnostic**: Works in any environment without configuration changes
+- **Proxy Development**: Development environment uses proxy setup for hot reload and same-domain cookies
 
 #### Cloud Platform Deployment
 
@@ -302,25 +321,32 @@ Update the connection string in your production environment variables.
 
 ### Common Issues
 
-1. **Port Already in Use**: The scripts will detect and offer to kill processes using required ports
+1. **Port Already in Use**: The scripts automatically kill processes using required ports before starting services
 2. **Docker Not Running**: Make sure Docker Desktop is started before running the scripts
-3. **Git Bash lsof Error**: The updated scripts now use Windows-compatible commands
-4. **Database Connection**: Ensure PostgreSQL container is running and accessible
-5. **Google OAuth "Missing required parameter: client_id"**: 
+3. **Database Connection**: Ensure PostgreSQL container is running and accessible
+4. **Google OAuth "Missing required parameter: client_id"**: 
    - Make sure you've copied `backend/appsettings.Development.template.json` to `backend/appsettings.Development.json`
    - Replace the placeholder values with your actual Google OAuth credentials
-   - Ensure your Google OAuth redirect URIs include `http://localhost:3000/api/auth/callback`
-6. **Google OAuth "redirect_uri_mismatch"**: 
+   - Ensure your Google OAuth redirect URIs include `http://localhost:5000/api/auth/callback`
+5. **Google OAuth "redirect_uri_mismatch"**: 
    - Check that your Google OAuth console has the correct redirect URIs configured
-   - For development: `http://localhost:3000/api/auth/callback`
+   - For development: `http://localhost:5000/api/auth/callback`
    - For production: `https://yourdomain.com/api/auth/callback`
+6. **React Dev Server Slow to Start**: On first run, React dev server may take 30-60 seconds to start
+7. **Proxy Issues**: If you can't access the app, ensure both backend (port 5000) and React dev server (port 3000) are running
+8. **Argument Parsing**: Ensure you're using the correct script for your platform (`.bat` for Windows, `.sh` for Linux/Mac)
 
-### Windows-Specific Notes
+### Cross-Platform Compatibility
 
-- **Git Bash**: Use `./start-dev.sh` (updated to work with Windows commands)
-- **Command Prompt**: Use `start-dev.bat`
-- **PowerShell**: Use `start-dev.bat` or `./start-dev.sh`
-- **Port Checking**: Scripts use `netstat` instead of `lsof` for Windows compatibility
+The project provides platform-specific startup scripts:
+
+- **Windows**: Use `start-dev.bat` (Command Prompt/PowerShell)
+- **Ubuntu/Linux**: Use `./start-dev.sh` (native bash)
+- **macOS**: Use `./start-dev.sh` (native bash)
+- **Port Management**: Scripts automatically kill processes using required ports before starting services
+- **Development Ports**: Backend runs on port 5000, React dev server on port 3000
+
+> **Note**: Each platform uses its native script for optimal compatibility and performance.
 
 ## Production Email Sending with Mailjet
 
@@ -398,8 +424,8 @@ mailjetTestUtils.waitForEmailCode('test@example.com', 10, 1000)
 bloodsugerhistory/
 ├── frontend/          # React application
 ├── backend/           # .NET API
-├── start-dev.sh       # Git Bash startup script
 ├── start-dev.bat      # Windows startup script
+├── start-dev.sh       # Linux/Mac startup script
 └── README.md          # This file
 ```
 
