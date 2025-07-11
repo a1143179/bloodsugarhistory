@@ -424,9 +424,74 @@ mailjetTestUtils.waitForEmailCode('test@example.com', 10, 1000)
 bloodsugerhistory/
 ├── frontend/          # React application
 ├── backend/           # .NET API
+├── TestMinimal/       # Unit tests for backend controllers
 ├── start-dev.bat      # Windows startup script
 ├── start-dev.sh       # Linux/Mac startup script
 └── README.md          # This file
+```
+
+### Unit Testing
+
+The project includes comprehensive unit tests for the backend controllers using xUnit and Moq.
+
+#### Running Tests
+
+```bash
+# Run all tests
+dotnet test TestMinimal/TestMinimal.csproj
+
+# Run tests with verbose output
+dotnet test TestMinimal/TestMinimal.csproj --verbosity normal
+
+# Run tests with coverage (if available)
+dotnet test TestMinimal/TestMinimal.csproj --collect:"XPlat Code Coverage"
+```
+
+#### Test Coverage
+
+The test suite covers:
+
+- **RecordsController**: CRUD operations for blood sugar records
+  - GET /api/records - Retrieve all records for authenticated user
+  - POST /api/records - Create new blood sugar record
+  - PUT /api/records/{id} - Update existing record
+  - DELETE /api/records/{id} - Delete record
+  - Validation testing for invalid data
+
+- **AuthController**: Authentication and user management
+  - GET /api/auth/me - Get current user information
+  - Session-based authentication testing
+  - User authorization testing
+
+- **HealthController**: Health check endpoints
+  - GET /health - Basic health check
+  - Database connectivity testing
+
+#### Test Features
+
+- **In-Memory Database**: Uses EF Core InMemory provider for fast, isolated tests
+- **Mock Dependencies**: Uses Moq for mocking external dependencies
+- **Session Testing**: Custom TestSession implementation for testing session-based authentication
+- **Validation Testing**: Comprehensive validation testing for all endpoints
+- **Error Handling**: Tests for various error scenarios and edge cases
+
+#### Test Architecture
+
+```csharp
+// Example test structure
+public class RecordsControllerTests
+{
+    private readonly Mock<ILogger<RecordsController>> _mockLogger;
+    private readonly DbContextOptions<AppDbContext> _options;
+
+    [Fact]
+    public async Task Get_ReturnsAllRecords()
+    {
+        // Arrange - Set up test data and mocks
+        // Act - Call the controller method
+        // Assert - Verify the expected behavior
+    }
+}
 ```
 
 ### Database Migrations
