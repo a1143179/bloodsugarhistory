@@ -179,6 +179,28 @@ This setup provides:
 - ✅ **No CORS issues** during development
 - ✅ **Seamless development experience**
 
+### Backend Database Configuration
+
+- **Development:**
+  By default, the backend uses **PostgreSQL** for persistent data during development.  
+  The connection string is set in `backend/appsettings.Development.json`:
+  ```json
+  {
+    "ConnectionStrings": {
+      "DefaultConnection": "Host=localhost;Port=5432;Database=bloodsugar;Username=postgres;Password=password"
+    }
+  }
+  ```
+  Make sure your local PostgreSQL instance is running on port 5432.
+
+- **Testing & CI/CD:**
+  For xunit tests and in GitHub Actions, the backend uses an **in-memory database**.  
+  This ensures tests are isolated, fast, and do not affect each other or your development data.
+
+- **How it works:**
+  The backend will use PostgreSQL if a connection string is present in configuration or environment variables.  
+  If not, it will automatically fall back to an in-memory database.
+
 ### Manual Setup (Alternative)
 
 If you prefer to start services manually:
