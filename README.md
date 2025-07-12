@@ -170,7 +170,7 @@ The application uses a **proxy development setup** for optimal development exper
 - **Database**: Runs on port 5432 (PostgreSQL)
 - **Backend**: Runs on port 3000 with hot reload
 - **React Dev Server**: Runs on port 3001 with hot reload
-- **Proxy**: Backend forwards frontend requests to React dev server
+- **Proxy**: Backend forwards non-API requests to React dev server
 - **Single Domain**: All requests go through `localhost:3000` for proper session management
 
 This setup provides:
@@ -178,28 +178,6 @@ This setup provides:
 - ✅ **Same-domain cookies** for authentication
 - ✅ **No CORS issues** during development
 - ✅ **Seamless development experience**
-
-### Backend Database Configuration
-
-- **Development:**
-  By default, the backend uses **PostgreSQL** for persistent data during development.  
-  The connection string is set in `backend/appsettings.Development.json`:
-  ```json
-  {
-    "ConnectionStrings": {
-      "DefaultConnection": "Host=localhost;Port=5432;Database=bloodsugar;Username=postgres;Password=password"
-    }
-  }
-  ```
-  Make sure your local PostgreSQL instance is running on port 5432.
-
-- **Testing & CI/CD:**
-  For xunit tests and in GitHub Actions, the backend uses an **in-memory database**.  
-  This ensures tests are isolated, fast, and do not affect each other or your development data.
-
-- **How it works:**
-  The backend will use PostgreSQL if a connection string is present in configuration or environment variables.  
-  If not, it will automatically fall back to an in-memory database.
 
 ### Manual Setup (Alternative)
 
@@ -226,9 +204,9 @@ If you prefer to start services manually:
 
 ## Access Points
 
-- **Application**: http://localhost:5000 (main entry point)
-- **Backend API**: http://localhost:5000/api
-- **React Dev Server**: http://localhost:3000 (direct access, not needed)
+- **Application**: http://localhost:3000 (main entry point)
+- **Backend API**: http://localhost:3000/api
+- **React Dev Server**: http://localhost:3001 (direct access, not needed)
 - **Database**: localhost:5432
   - Database: `bloodsugar`
   - Username: `postgres`
@@ -293,7 +271,8 @@ ASPNETCORE_URLS=http://+:3000
 
 - **Automatic HTTPS Detection**: Cookies and security settings automatically adjust for HTTPS in production
 - **Dynamic OAuth URLs**: Redirect URIs are automatically determined based on the current request
-- **Static File Serving**: Frontend is built and served as static files by the backend
+- **Static File Serving**: Frontend is built and served as static files by the backend from `wwwroot`
+- **Client-Side Routing**: All routes fallback to `index.html` for React Router
 - **Single Port**: Everything runs on port 3000, eliminating CORS and session issues
 - **Environment-Agnostic**: Works in any environment without configuration changes
 - **Proxy Development**: Development environment uses proxy setup for hot reload and same-domain cookies
@@ -333,30 +312,32 @@ Update the connection string in your production environment variables.
 
 ## Features
 
-- **User Authentication**: Email/password registration and login
+- **User Authentication**: Google OAuth integration
 - **Blood Sugar Tracking**: Add, edit, and delete blood sugar records
 - **User-Specific Data**: Each user only sees their own records
 - **Analytics Dashboard**: Charts and statistics for blood sugar trends
 - **Responsive Design**: Works on desktop and mobile devices
+- **Multi-language Support**: Internationalization support
+- **Session Management**: Secure session-based authentication
 
 ## Troubleshooting
 
 ### Common Issues
 
-1. **Port Already in Use**: The scripts automatically kill processes using required ports before starting services
+1. **Port Already in Use**: The scripts check if ports are in use and skip starting services if occupied
 2. **Docker Not Running**: Make sure Docker Desktop is started before running the scripts
 3. **Database Connection**: Ensure PostgreSQL container is running and accessible
 4. **Google OAuth "Missing required parameter: client_id"**: 
    - Make sure you've copied `backend/appsettings.Development.template.json` to `backend/appsettings.Development.json`
    - Replace the placeholder values with your actual Google OAuth credentials
-   - Ensure your Google OAuth redirect URIs include `http://localhost:5000/api/auth/callback`
+   - Ensure your Google OAuth redirect URIs include `http://localhost:3000/api/auth/callback`
 5. **Google OAuth "redirect_uri_mismatch"**: 
    - Check that your Google OAuth console has the correct redirect URIs configured
-   - For development: `http://localhost:5000/api/auth/callback`
+   - For development: `http://localhost:3000/api/auth/callback`
    - For production: `https://yourdomain.com/api/auth/callback`
 6. **React Dev Server Slow to Start**: On first run, React dev server may take 30-60 seconds to start
-7. **Proxy Issues**: If you can't access the app, ensure both backend (port 5000) and React dev server (port 3000) are running
-8. **Argument Parsing**: Ensure you're using the correct script for your platform (`.bat` for Windows, `.sh` for Linux/Mac)
+7. **Proxy Issues**: If you can't access the app, ensure both backend (port 3000) and React dev server (port 3001) are running
+8. **404 Errors on Routes**: In development, ensure the backend proxy is working correctly. In production, ensure static files are being served from `wwwroot`
 
 ### Cross-Platform Compatibility
 
@@ -365,12 +346,10 @@ The project provides platform-specific startup scripts:
 - **Windows**: Use `start-dev.bat` (Command Prompt/PowerShell)
 - **Ubuntu/Linux**: Use `./start-dev.sh` (native bash)
 - **macOS**: Use `./start-dev.sh` (native bash)
-- **Port Management**: Scripts automatically kill processes using required ports before starting services
-- **Development Ports**: Backend runs on port 5000, React dev server on port 3000
+- **Port Management**: Scripts check if ports are in use and skip starting services if occupied
+- **Development Ports**: Backend runs on port 3000, React dev server on port 3001
 
 > **Note**: Each platform uses its native script for optimal compatibility and performance.
-
-
 
 ## Development
 
@@ -378,10 +357,18 @@ The project provides platform-specific startup scripts:
 ```
 bloodsugerhistory/
 ├── frontend/          # React application
+│   ├── src/           # React source code
+│   ├── public/        # Static assets
+│   └── cypress/       # End-to-end tests
 ├── backend/           # .NET API
-│   └── Tests/         # Unit tests for backend controllers
+│   ├── Controllers/   # API controllers
+│   ├── Models/        # Data models
+│   ├── Data/          # Database context
+│   └── DTOs/          # Data transfer objects
+├── xunit/             # Unit tests for backend
 ├── start-dev.bat      # Windows startup script
 ├── start-dev.sh       # Linux/Mac startup script
+├── Dockerfile         # Production container
 └── README.md          # This file
 ```
 
@@ -393,16 +380,16 @@ The project includes comprehensive unit tests for the backend controllers using 
 
 ```bash
 # Run all tests
-dotnet test backend/Tests/Backend.Tests.csproj
+dotnet test xunit/Backend.Tests.csproj
 
 # Run tests with verbose output
-dotnet test backend/Tests/Backend.Tests.csproj --verbosity normal
+dotnet test xunit/Backend.Tests.csproj --verbosity normal
 
 # Run specific test class
-dotnet test backend/Tests/Backend.Tests.csproj --filter "RecordsControllerTests"
+dotnet test xunit/Backend.Tests.csproj --filter "RecordsControllerTests"
 
 # Run tests with coverage (if available)
-dotnet test backend/Tests/Backend.Tests.csproj --collect:"XPlat Code Coverage"
+dotnet test xunit/Backend.Tests.csproj --collect:"XPlat Code Coverage"
 ```
 
 #### 📊 Test Coverage
@@ -504,6 +491,19 @@ All tests pass with the following metrics:
 - **Edge Case Coverage**: Invalid data, missing records, unauthorized access
 - **Fast Feedback**: Quick execution for rapid development cycles
 
+### End-to-End Testing
+
+The project includes comprehensive Cypress tests for the frontend:
+
+```bash
+# Run Cypress tests
+cd frontend
+npm run cypress:run
+
+# Open Cypress UI
+npm run cypress:open
+```
+
 ### Database Migrations
 
 The backend automatically runs migrations on startup. If you need to run migrations manually:
@@ -515,18 +515,37 @@ dotnet ef database update
 
 ### Adding New Features
 
-1. **Backend Changes**: Modify API endpoints in `backend/Program.cs`
+1. **Backend Changes**: Modify API endpoints in `backend/Controllers/`
 2. **Frontend Changes**: Update React components in `frontend/src/`
 3. **Database Changes**: Create new migrations with `dotnet ef migrations add <name>`
 
-## Contributing
+## Architecture Overview
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Test thoroughly
-5. Submit a pull request
+### Development vs Production
 
-## License
+**Development Mode:**
+- Backend runs on port 3000
+- React dev server runs on port 3001
+- Backend proxies non-API requests to React dev server
+- Hot reload enabled for both frontend and backend
 
-This project is licensed under the MIT License.
+**Production Mode:**
+- Single application on port 3000
+- React app built and served as static files from `wwwroot`
+- Backend serves both API and static files
+- Client-side routing handled by fallback to `index.html`
+
+### Security Features
+
+- **Session-based Authentication**: Secure session management
+- **Google OAuth Integration**: Industry-standard authentication
+- **User-specific Data**: Each user only accesses their own records
+- **HTTPS Support**: Automatic HTTPS detection and configuration
+- **CORS Protection**: Proper CORS configuration for production
+
+### Performance Optimizations
+
+- **Static File Serving**: Efficient serving of built React assets
+- **Database Optimization**: Proper indexing and query optimization
+- **Caching**: Session and static file caching
+- **Compression**: Automatic response compression
