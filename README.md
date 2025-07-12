@@ -357,7 +357,7 @@ The project provides platform-specific startup scripts:
 bloodsugerhistory/
 ├── frontend/          # React application
 ├── backend/           # .NET API
-├── TestMinimal/       # Unit tests for backend controllers
+│   └── Tests/         # Unit tests for backend controllers
 ├── start-dev.bat      # Windows startup script
 ├── start-dev.sh       # Linux/Mac startup script
 └── README.md          # This file
@@ -371,16 +371,16 @@ The project includes comprehensive unit tests for the backend controllers using 
 
 ```bash
 # Run all tests
-dotnet test TestMinimal/TestMinimal.csproj
+dotnet test backend/Tests/Backend.Tests.csproj
 
 # Run tests with verbose output
-dotnet test TestMinimal/TestMinimal.csproj --verbosity normal
+dotnet test backend/Tests/Backend.Tests.csproj --verbosity normal
 
 # Run specific test class
-dotnet test TestMinimal/TestMinimal.csproj --filter "RecordsControllerTests"
+dotnet test backend/Tests/Backend.Tests.csproj --filter "RecordsControllerTests"
 
 # Run tests with coverage (if available)
-dotnet test TestMinimal/TestMinimal.csproj --collect:"XPlat Code Coverage"
+dotnet test backend/Tests/Backend.Tests.csproj --collect:"XPlat Code Coverage"
 ```
 
 #### 📊 Test Coverage
