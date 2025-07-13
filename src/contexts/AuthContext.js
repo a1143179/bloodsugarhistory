@@ -129,9 +129,66 @@ export function AuthProvider({ children }) {
       }
     } else {
       logger.debug('No saved session found in localStorage');
-        }
-        setLoading(false);
+    }
+    setLoading(false);
   }, []);
+
+  // Handle OAuth callback
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const code = urlParams.get('code');
+    const error = urlParams.get('error');
+    
+    if (error) {
+      logger.error('OAuth error received', { error });
+      alert('Login failed: ' + error);
+      return;
+    }
+    
+    if (code) {
+      logger.info('OAuth authorization code received, processing callback');
+      handleOAuthCallback(code);
+    }
+  }, []);
+
+  const handleOAuthCallback = async (code) => {
+    try {
+      setLoading(true);
+      
+      // Call backend to exchange code for JWT token and user info
+      const response = await fetch(`${config.backendUrl}/api/auth/callback?code=${code}`, {
+        method: 'GET',
+        credentials: 'include'
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      
+      if (data.user && data.jwt) {
+        // Set user and JWT token
+        setUser(data.user);
+        setAccessToken(data.jwt);
+        
+        // Store in localStorage
+        localStorage.setItem('user', JSON.stringify(data.user));
+        localStorage.setItem('accessToken', data.jwt);
+        
+        logger.logAuthEvent('login_success', { userId: data.user.id, email: data.user.email });
+        
+        // Redirect to dashboard
+        window.location.href = '/dashboard';
+      } else {
+        throw new Error('No user data or JWT token received from backend');
+      }
+    } catch (error) {
+      logger.logError(error, { context: 'oauth_callback' });
+      alert('Login failed. Please try again.');
+      setLoading(false);
+    }
+  };
 
   // Login with Google (direct OAuth)
   const loginWithGoogle = (e, rememberMe) => {
