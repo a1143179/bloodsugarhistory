@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import LocalHospitalIcon from '@mui/icons-material/LocalHospital';
@@ -13,6 +13,23 @@ const GoogleLogin = () => {
   const isMobile = useMediaQuery(theme.breakpoints.down('md')) || isTestMobile;
   const [loading, setLoading] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
+
+  // Initialize Google Sign-In button
+  useEffect(() => {
+    if (window.google && window.google.accounts) {
+      window.google.accounts.id.renderButton(
+        document.getElementById('google-signin-button'),
+        {
+          theme: 'outline',
+          size: 'large',
+          text: 'signin_with',
+          shape: 'rectangular',
+          width: isMobile ? '100%' : '280px',
+          height: '48px'
+        }
+      );
+    }
+  }, [isMobile]);
 
   const handleLogin = async (e) => {
     setLoading(true);
@@ -119,24 +136,18 @@ const GoogleLogin = () => {
             <Typography variant="body2" color="text.secondary" sx={{ mb: 3, display: { xs: 'block', md: 'block' } }}>
               {t('signInToAccess')}
             </Typography>
-            <Button
-              variant="contained"
-              color="primary"
-              startIcon={<GoogleIcon />}
-              onClick={handleLogin}
-              className="google-signin-button"
+            
+            {/* Google Sign-In Button */}
+            <Box
+              id="google-signin-button"
               sx={{ 
-                py: 1.5, 
-                fontWeight: 600, 
-                fontSize: '1rem', 
                 mb: 2,
+                display: 'flex',
+                justifyContent: 'center',
                 width: { xs: '100%', md: '280px' }
               }}
-              data-testid="google-signin-button"
-              disabled={loading}
-            >
-              {t('signInWithGoogle')}
-            </Button>
+            />
+
             <FormControlLabel
               control={
                 <Checkbox
