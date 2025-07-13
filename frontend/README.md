@@ -32,14 +32,15 @@ You need to set up Google OAuth credentials:
    - `http://localhost:3000/api/auth/callback` (development)
    - `https://yourdomain.com/api/auth/callback` (production)
 
-### 3. Set Environment Variables
+### 3. Environment Variables
 
-Create a `.env` file in the backend directory:
+The frontend requires minimal environment configuration. For production, set:
 
 ```env
-GOOGLE_CLIENT_ID=your_google_client_id
-GOOGLE_CLIENT_SECRET=your_google_client_secret
+REACT_APP_API_URL=https://your-app.azurewebsites.net
 ```
+
+For development, the API URL is automatically configured to `http://localhost:3000`.
 
 ### 4. Start the Development Server
 
@@ -123,11 +124,13 @@ All API calls use AJAX (fetch API) for seamless user experience.
 
 ### Environment Variables
 
-Create a `.env` file in the frontend directory for environment-specific configuration:
+The frontend uses the following environment variables:
 
-```
-REACT_APP_API_URL=http://localhost:3000
-```
+| Variable Name | Description | Example Value |
+|---------------|-------------|---------------|
+| `REACT_APP_API_URL` | Backend API URL (production only) | `https://your-app.azurewebsites.net` |
+
+**Note**: For development, the API URL is automatically configured to `http://localhost:3000`.
 
 ## Security Notes
 
