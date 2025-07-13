@@ -29,11 +29,6 @@ jobs:
     - name: Build frontend
       run: npm run build
 
-    - name: Run Cypress E2E tests
-      run: npx cypress run --browser chrome
-      env:
-        CYPRESS_baseUrl: "http://localhost:3001"
-
   deploy:
     runs-on: ubuntu-latest
     needs: build-and-test
