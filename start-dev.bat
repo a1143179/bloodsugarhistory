@@ -1,22 +1,21 @@
 @echo off
-setlocal enabledelayedexpansion
-
-REM Check Node.js is installed
-for /f "delims=" %%V in ('node --version 2^>nul') do set NODE_VERSION=%%V
-if not defined NODE_VERSION (
-  echo Node.js is not installed or not in PATH. Please install Node.js from https://nodejs.org/ or restart your terminal after installation.
-  exit /b 1
-)
-echo Node.js version: !NODE_VERSION!
-
-echo Starting React development server on port 3001...
-cd frontend
-if not exist "node_modules" (
-  echo Installing frontend dependencies...
-  npm install
-)
-set PORT=3001
-start "frontend" npm start
-cd ..
+echo Starting Medical Tracker Development Environment...
 echo.
-echo Frontend started successfully! Access it at http://localhost:3001 
+
+echo Starting Frontend...
+cd frontend
+start "Frontend Dev Server" cmd /k "start-dev.bat"
+cd ..
+
+echo Starting Backend...
+cd backend
+start "Backend Dev Server" cmd /k "start-dev.bat"
+cd ..
+
+echo.
+echo Development servers are starting...
+echo Frontend will be available at: http://localhost:3000
+echo Backend will be available at: http://localhost:55556
+echo.
+echo Press any key to exit this script (servers will continue running)...
+pause >nul 
