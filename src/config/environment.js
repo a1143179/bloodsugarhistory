@@ -2,7 +2,7 @@ const config = {
     development: {
         backendUrl: 'http://localhost:55556',
         frontendUrl: 'http://localhost:55555',
-        googleClientId: 'YOUR_GOOGLE_CLIENT_ID', // Replace with your local Google Client ID
+        googleClientId: '359243866499-mvar0u4reungd9a399j5761rmlsbb3p8.apps.googleusercontent.com', // Replace with your local Google Client ID
         environment: 'development'
     },
     production: {

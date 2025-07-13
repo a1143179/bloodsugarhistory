@@ -1,4 +1,19 @@
+using Serilog;
+using Serilog.Events;
+
 var builder = WebApplication.CreateBuilder(args);
+
+// Configure Serilog
+Log.Logger = new LoggerConfiguration()
+    .MinimumLevel.Debug()
+    .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
+    .Enrich.FromLogContext()
+    .WriteTo.Console(
+        outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}"
+    )
+    .CreateLogger();
+
+builder.Host.UseSerilog();
 
 // Add services to the container.
 builder.Services.AddControllers();
@@ -35,13 +50,34 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
+// Add request logging middleware
+app.UseSerilogRequestLogging(options =>
+{
+    options.MessageTemplate = "HTTP {RequestMethod} {RequestPath} responded {StatusCode} in {Elapsed:0.0000} ms";
+});
+
 app.UseHttpsRedirection();
 app.UseCors("AllowFrontend");
 app.UseSession();
 
 app.MapControllers();
 
-app.Run();
+// Log application startup
+Log.Information("Medical Tracker Backend starting up...");
+
+try
+{
+    app.Run();
+    Log.Information("Medical Tracker Backend stopped cleanly");
+}
+catch (Exception ex)
+{
+    Log.Fatal(ex, "Medical Tracker Backend terminated unexpectedly");
+}
+finally
+{
+    Log.CloseAndFlush();
+}
 
 record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
 {
