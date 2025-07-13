@@ -486,7 +486,7 @@ function Dashboard({ mobilePage, onMobilePageChange }) {
                 />
                 <YAxis domain={[0, 'dataMax + 2']} />
                 <RechartsTooltip 
-                  formatter={(value, name, props) => {
+                  formatter={(value, name) => {
                     if (name === 'level') {
                       return [
                         value ? `${value} mmol/L` : t('noData'), 
@@ -918,7 +918,7 @@ function Dashboard({ mobilePage, onMobilePageChange }) {
                               />
                               <YAxis domain={[0, 'dataMax + 2']} />
                               <RechartsTooltip 
-                                formatter={(value, name, props) => {
+                                formatter={(value, name) => {
                                   if (name === 'level') {
                                     return [
                                       value ? `${value} mmol/L` : t('noData'), 
