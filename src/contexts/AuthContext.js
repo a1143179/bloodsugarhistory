@@ -61,7 +61,7 @@ export function AuthProvider({ children }) {
   // Login with Google (redirects to backend)
   const loginWithGoogle = (e, rememberMe) => {
     if (e) e.preventDefault();
-    const loginUrl = `${config.apiUrl}/api/auth/login?returnUrl=${encodeURIComponent(window.location.pathname)}&rememberMe=${rememberMe ? 'true' : 'false'}`;
+    const loginUrl = `${config.backendUrl}/api/auth/login?returnUrl=${encodeURIComponent(window.location.pathname)}&rememberMe=${rememberMe ? 'true' : 'false'}`;
     window.location.href = loginUrl;
   };
 

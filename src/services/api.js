@@ -2,7 +2,7 @@ import config from '../config/environment';
 
 class ApiService {
     constructor() {
-        this.baseURL = config.apiUrl;
+        this.baseURL = config.backendUrl;
     }
 
     // Make authenticated API request

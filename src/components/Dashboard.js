@@ -54,7 +54,7 @@ import {
 } from 'recharts';
 
 // Backend API URL
-const API_URL = `${config.apiUrl}/api/records`;
+const API_URL = `${config.backendUrl}/api/records`;
 
 function Dashboard({ mobilePage, onMobilePageChange }) {
   const { user } = useAuth();
