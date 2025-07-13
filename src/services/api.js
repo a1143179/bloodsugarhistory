@@ -12,8 +12,20 @@ class ApiService {
         const url = `${this.baseURL}${endpoint}`;
         const method = options.method || 'GET';
         
+        // Get JWT token from cookie if not provided
+        let jwtToken = accessToken;
+        if (!jwtToken) {
+            const getCookie = (name) => {
+                const value = `; ${document.cookie}`;
+                const parts = value.split(`; ${name}=`);
+                if (parts.length === 2) return parts.pop().split(';').shift();
+                return null;
+            };
+            jwtToken = getCookie('medical_tracker_access_token');
+        }
+        
         logger.logApiRequest(method, url, {
-            hasAccessToken: !!accessToken,
+            hasAccessToken: !!jwtToken,
             headers: options.headers
         });
 
@@ -26,8 +38,8 @@ class ApiService {
             ...options,
         };
 
-        if (accessToken) {
-            configObj.headers.Authorization = `Bearer ${accessToken}`;
+        if (jwtToken) {
+            configObj.headers.Authorization = `Bearer ${jwtToken}`;
         }
 
         try {
@@ -107,6 +119,9 @@ class ApiService {
             }
             const data = await response.json();
             logger.logAuthEvent('refresh_token_success');
+            
+            // The new JWT token should be set in the medical_tracker_access_token cookie by the backend
+            // We don't need to manually update localStorage since we're using cookies now
             return data;
         } catch (error) {
             logger.logError(error, { context: 'refresh_token' });

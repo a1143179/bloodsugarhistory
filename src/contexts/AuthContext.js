@@ -205,18 +205,30 @@ export function AuthProvider({ children }) {
       const data = await response.json();
       logger.info('Backend callback data received', { 
         hasUser: !!data.user, 
-        hasJwt: !!data.jwt,
         userEmail: data.user?.email 
       });
       
-      if (data.user && data.jwt) {
+      // Get JWT token from cookie
+      const getCookie = (name) => {
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; ${name}=`);
+        if (parts.length === 2) return parts.pop().split(';').shift();
+        return null;
+      };
+      
+      const jwtToken = getCookie('medical_tracker_access_token');
+      logger.info('JWT token from cookie', { 
+        hasJwt: !!jwtToken,
+        jwtLength: jwtToken?.length 
+      });
+      
+      if (data.user && jwtToken) {
         // Set user and JWT token
         setUser(data.user);
-        setAccessToken(data.jwt);
+        setAccessToken(jwtToken);
         
-        // Store in localStorage
+        // Store user in localStorage (JWT is in cookie)
         localStorage.setItem('user', JSON.stringify(data.user));
-        localStorage.setItem('accessToken', data.jwt);
         
         logger.logAuthEvent('login_success', { userId: data.user.id, email: data.user.email });
         
@@ -224,8 +236,12 @@ export function AuthProvider({ children }) {
         window.history.replaceState({}, document.title, '/dashboard');
         window.location.href = '/dashboard';
       } else {
-        logger.error('Invalid response from backend', { data });
-        throw new Error('No user data or JWT token received from backend');
+        logger.error('Invalid response from backend', { 
+          hasUser: !!data.user, 
+          hasJwt: !!jwtToken,
+          data 
+        });
+        throw new Error('No user data received from backend or JWT token not found in cookie');
       }
     } catch (error) {
       logger.logError(error, { context: 'oauth_callback' });
