@@ -1,0 +1,73 @@
+name: Deploy Frontend to Azure
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'frontend/**'
+      - '.github/workflows/deploy-frontend.yml'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'frontend/**'
+
+env:
+  AZURE_WEBAPP_NAME: 'bloodsugarhistory-frontend' # Frontend-specific Azure Web App
+
+jobs:
+  build-and-test-frontend:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20.17.0'
+        cache: 'npm'
+        cache-dependency-path: frontend/package-lock.json
+
+    - name: Install frontend dependencies
+      run: |
+        cd frontend
+        npm ci
+
+    - name: Build frontend
+      run: |
+        cd frontend
+        npm run build
+
+    - name: Test frontend build
+      run: |
+        cd frontend
+        npm test -- --watchAll=false --passWithNoTests
+
+    - name: Prepare frontend for deployment
+      run: |
+        mkdir -p frontend-deploy
+        cp -r frontend/build/* frontend-deploy/
+        cp frontend/public/_redirects frontend-deploy/ 2>/dev/null || echo "No _redirects file found"
+
+  deploy-frontend:
+    runs-on: ubuntu-latest
+    needs: build-and-test-frontend
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download frontend build
+        uses: actions/download-artifact@v4
+        with:
+          name: frontend-build
+          path: frontend-deploy
+
+      - name: Deploy Frontend to Azure Static Web App
+        uses: azure/static-web-apps-deploy@v1
+        with:
+          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          app_location: "/frontend-deploy"
+          output_location: ""
+          skip_app_build: true 
