@@ -138,10 +138,13 @@ export function AuthProvider({ children }) {
     const urlParams = new URLSearchParams(window.location.search);
     const code = urlParams.get('code');
     const error = urlParams.get('error');
+    const errorDescription = urlParams.get('error_description');
     
     if (error) {
-      logger.error('OAuth error received', { error });
-      alert('Login failed: ' + error);
+      logger.error('OAuth error received', { error, errorDescription });
+      alert(`Login failed: ${error}${errorDescription ? ' - ' + errorDescription : ''}`);
+      // Clear URL parameters and redirect to login
+      window.history.replaceState({}, document.title, '/login');
       return;
     }
     
@@ -154,6 +157,7 @@ export function AuthProvider({ children }) {
   const handleOAuthCallback = async (code) => {
     try {
       setLoading(true);
+      logger.info('Starting OAuth callback processing', { codeLength: code.length });
       
       // Call backend to exchange code for JWT token and user info
       const response = await fetch(`${config.backendUrl}/api/auth/callback?code=${code}`, {
@@ -161,11 +165,34 @@ export function AuthProvider({ children }) {
         credentials: 'include'
       });
       
+      logger.info('Backend callback response received', { 
+        status: response.status, 
+        ok: response.ok,
+        statusText: response.statusText 
+      });
+      
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const errorText = await response.text();
+        logger.error('Backend callback failed', { 
+          status: response.status, 
+          statusText: response.statusText,
+          errorText 
+        });
+        
+        // If backend endpoint doesn't exist (404), show helpful message
+        if (response.status === 404) {
+          throw new Error('Backend OAuth callback endpoint not found. Please ensure the backend is running and the endpoint is implemented.');
+        }
+        
+        throw new Error(`Backend error: ${response.status} - ${errorText}`);
       }
       
       const data = await response.json();
+      logger.info('Backend callback data received', { 
+        hasUser: !!data.user, 
+        hasJwt: !!data.jwt,
+        userEmail: data.user?.email 
+      });
       
       if (data.user && data.jwt) {
         // Set user and JWT token
@@ -178,15 +205,19 @@ export function AuthProvider({ children }) {
         
         logger.logAuthEvent('login_success', { userId: data.user.id, email: data.user.email });
         
-        // Redirect to dashboard
+        // Clear URL parameters and redirect to dashboard
+        window.history.replaceState({}, document.title, '/dashboard');
         window.location.href = '/dashboard';
       } else {
+        logger.error('Invalid response from backend', { data });
         throw new Error('No user data or JWT token received from backend');
       }
     } catch (error) {
       logger.logError(error, { context: 'oauth_callback' });
-      alert('Login failed. Please try again.');
+      alert(`Login failed: ${error.message}`);
       setLoading(false);
+      // Clear URL parameters and redirect to login
+      window.history.replaceState({}, document.title, '/login');
     }
   };
 
