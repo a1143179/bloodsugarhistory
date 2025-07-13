@@ -4,12 +4,20 @@ echo.
 
 echo Starting Frontend...
 cd frontend
-start "Frontend Dev Server" cmd /k "start-dev.bat"
+if not exist "node_modules" (
+  echo Installing frontend dependencies...
+  npm install
+)
+start "Frontend Dev Server" cmd /k "npm start"
 cd ..
 
 echo Starting Backend...
 cd backend
-start "Backend Dev Server" cmd /k "start-dev.bat"
+if not exist "bin" (
+  echo Building backend...
+  dotnet build
+)
+start "Backend Dev Server" cmd /k "dotnet run"
 cd ..
 
 echo.
