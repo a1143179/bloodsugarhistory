@@ -25,7 +25,7 @@ export const LanguageProvider = ({ children }) => {
 
   // Listen for user login events to load language preference from backend
   useEffect(() => {
-    const handleUserLogin = async () => {
+    const handleUserLogin = async (event) => {
       setIsAuthenticated(true);
       await loadLanguagePreference();
     };

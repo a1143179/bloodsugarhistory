@@ -17,11 +17,7 @@ const GoogleLogin = () => {
   const handleLogin = async (e) => {
     setLoading(true);
     try {
-      if (typeof window !== 'undefined' && window.Cypress && window.loginWithGoogleTest) {
-        await window.loginWithGoogleTest(e, rememberMe);
-      } else {
-        await loginWithGoogle(e, rememberMe);
-      }
+      await loginWithGoogle(e, rememberMe);
     } finally {
       setLoading(false);
     }

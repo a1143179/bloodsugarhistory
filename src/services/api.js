@@ -5,47 +5,35 @@ class ApiService {
         this.baseURL = config.apiUrl;
     }
 
-    // Get JWT token from cookie
-    getToken() {
-        // In a real implementation, you'd get this from an HTTP-only cookie
-        // For now, we'll use localStorage for development
-        return localStorage.getItem('auth_token');
-    }
-
-    // Set JWT token (for development - in production this would be HTTP-only cookie)
-    setToken(token) {
-        localStorage.setItem('auth_token', token);
-    }
-
-    // Remove JWT token
-    removeToken() {
-        localStorage.removeItem('auth_token');
-    }
-
     // Make authenticated API request
-    async request(endpoint, options = {}) {
-        const token = this.getToken();
-        
-        const config = {
+    async request(endpoint, options = {}, accessToken = null) {
+        const configObj = {
             headers: {
                 'Content-Type': 'application/json',
                 ...options.headers,
             },
+            credentials: 'include', // Always include cookies for refresh
             ...options,
         };
 
-        if (token) {
-            config.headers.Authorization = `Bearer ${token}`;
+        if (accessToken) {
+            configObj.headers.Authorization = `Bearer ${accessToken}`;
         }
 
         try {
-            const response = await fetch(`${this.baseURL}${endpoint}`, config);
-            
-            if (response.status === 401) {
-                // Token expired or invalid
-                this.removeToken();
-                window.location.href = '/login';
-                return null;
+            let response = await fetch(`${this.baseURL}${endpoint}`, configObj);
+
+            if (response.status === 401 && endpoint !== '/api/auth/refresh') {
+                // Try to refresh token
+                const refreshRes = await this.refreshToken();
+                if (refreshRes && refreshRes.accessToken) {
+                    // Retry original request with new access token
+                    configObj.headers.Authorization = `Bearer ${refreshRes.accessToken}`;
+                    response = await fetch(`${this.baseURL}${endpoint}`, configObj);
+                } else {
+                    window.location.href = '/login';
+                    return null;
+                }
             }
 
             if (!response.ok) {
@@ -61,7 +49,6 @@ class ApiService {
 
     // Auth endpoints
     async login() {
-        // Redirect to backend OAuth endpoint
         window.location.href = `${this.baseURL}/api/auth/login?returnUrl=${encodeURIComponent(window.location.origin)}/dashboard`;
     }
 
@@ -70,39 +57,51 @@ class ApiService {
             await this.request('/api/auth/logout', { method: 'POST' });
         } catch (error) {
             console.error('Logout error:', error);
-        } finally {
-            this.removeToken();
-            window.location.href = '/login';
         }
     }
 
-    async getCurrentUser() {
-        return await this.request('/api/auth/me');
+    async getCurrentUser(accessToken) {
+        return await this.request('/api/auth/me', {}, accessToken);
+    }
+
+    async refreshToken() {
+        // Backend should read refresh token from HTTP-only cookie
+        try {
+            const response = await fetch(`${this.baseURL}/api/auth/refresh`, {
+                method: 'POST',
+                credentials: 'include',
+                headers: { 'Content-Type': 'application/json' },
+            });
+            if (!response.ok) return null;
+            return await response.json();
+        } catch (error) {
+            return null;
+        }
     }
 
     // Blood sugar records endpoints
-    async getRecords() {
-        return await this.request('/api/records');
+    async getRecords(accessToken) {
+        return await this.request('/api/records', {}, accessToken);
     }
 
-    async createRecord(record) {
+    async createRecord(record, accessToken) {
         return await this.request('/api/records', {
             method: 'POST',
             body: JSON.stringify(record),
-        });
+        }, accessToken);
     }
 
-    async updateRecord(id, record) {
+    async updateRecord(id, record, accessToken) {
         return await this.request(`/api/records/${id}`, {
             method: 'PUT',
             body: JSON.stringify(record),
-        });
+        }, accessToken);
     }
 
-    async deleteRecord(id) {
+    async deleteRecord(id, accessToken) {
         return await this.request(`/api/records/${id}`, {
             method: 'DELETE',
-        });
+        }, accessToken);
     }
 
     // Health check
