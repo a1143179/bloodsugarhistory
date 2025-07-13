@@ -18,15 +18,21 @@
    - **Authorized redirect URIs**: Leave empty (not needed for frontend-only)
 5. **Copy Client ID**: Copy the generated Client ID
 
-## Step 2: Update Frontend Code
+## Step 2: Configure Client ID
 
-1. **Open**: `src/contexts/AuthContext.js`
-2. **Find line**: `client_id: 'YOUR_GOOGLE_CLIENT_ID'`
+### For Local Development:
+1. **Open**: `src/config/environment.js`
+2. **Find line**: `googleClientId: 'YOUR_GOOGLE_CLIENT_ID'`
 3. **Replace**: `'YOUR_GOOGLE_CLIENT_ID'` with your actual Client ID
 4. **Example**:
    ```javascript
-   client_id: '123456789-abcdefghijklmnop.apps.googleusercontent.com',
+   googleClientId: '123456789-abcdefghijklmnop.apps.googleusercontent.com',
    ```
+
+### For Production (Azure):
+1. **Set Environment Variable**: `REACT_APP_GOOGLE_CLIENT_ID`
+2. **Value**: Your Google OAuth Client ID
+3. **The app will automatically use this in production**
 
 ## Step 3: Test
 

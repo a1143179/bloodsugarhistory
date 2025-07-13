@@ -46,7 +46,7 @@ export function AuthProvider({ children }) {
     if (window.google && window.google.accounts) {
       try {
         window.google.accounts.id.initialize({
-          client_id: 'YOUR_GOOGLE_CLIENT_ID', // TODO: Replace with your actual Google OAuth Client ID from Google Cloud Console
+          client_id: config.googleClientId, // Load from environment config
           callback: handleCredentialResponse,
           auto_select: false,
           cancel_on_tap_outside: true,
