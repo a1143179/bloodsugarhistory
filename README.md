@@ -16,13 +16,20 @@ A modern React application for tracking blood sugar history and analytics.
    cd medical-tracker-frontend
    ```
 
-2. **Install dependencies and start the app**:
+2. **Setup Google OAuth (Required)**:
+   - Copy `backend\appsettings.Development.json.example` to `backend\appsettings.Development.json`
+   - Add your Google OAuth credentials to `backend\appsettings.Development.json`:
+     - Replace `YOUR_GOOGLE_CLIENT_ID_HERE` with your actual Google Client ID
+     - Replace `YOUR_GOOGLE_CLIENT_SECRET_HERE` with your actual Google Client Secret
+   - See [Google OAuth Setup Guide](GOOGLE_OAUTH_SETUP.md) for detailed instructions
+
+3. **Install dependencies and start the app**:
    ```bash
    npm install
    npm start
    ```
 
-3. **Access the application** at [http://localhost:3000](http://localhost:3000)
+4. **Access the application** at [http://localhost:55555](http://localhost:55555)
 
 ## Project Structure
 ```
@@ -63,6 +70,24 @@ npm run cypress:open
 
 - **Windows**: Use `start-dev.bat` (starts frontend only)
 - **Linux/Mac**: Use `./start-dev.sh` (starts frontend only)
+
+## Manual Setup (Alternative to setup-dev.bat)
+
+If you need to manually set up the development environment:
+
+1. **Create appsettings.Development.json**:
+   ```bash
+   copy backend\appsettings.Development.json.example backend\appsettings.Development.json
+   ```
+
+2. **Add Google OAuth credentials** to `backend\appsettings.Development.json`:
+   - Replace `YOUR_GOOGLE_CLIENT_ID_HERE` with your actual Google Client ID
+   - Replace `YOUR_GOOGLE_CLIENT_SECRET_HERE` with your actual Google Client Secret
+
+3. **Start the application**:
+   ```bash
+   start-dev.bat
+   ```
 
 ---
 

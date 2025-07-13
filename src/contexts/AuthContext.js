@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import PropTypes from 'prop-types';
 import api from '../services/api';
+import config from '../config/environment';
 
 const AuthContext = createContext();
 
@@ -21,32 +22,46 @@ export function AuthProvider({ children }) {
     }
   }, []);
 
-  // On mount, try to refresh token (if refresh token cookie exists)
+  // Check for token in URL after OAuth callback
   useEffect(() => {
-    const tryRefresh = async () => {
-      try {
-        const res = await api.refreshToken();
-        if (res && res.accessToken) {
-          setAccessToken(res.accessToken);
-          fetchUser(res.accessToken);
-        } else {
+    const urlParams = new URLSearchParams(window.location.search);
+    const token = urlParams.get('token');
+    
+    if (token) {
+      // Remove token from URL
+      const newUrl = window.location.pathname;
+      window.history.replaceState({}, document.title, newUrl);
+      
+      // Set token and fetch user
+      setAccessToken(token);
+      fetchUser(token);
+    } else {
+      // Try to refresh token (if refresh token cookie exists)
+      const tryRefresh = async () => {
+        try {
+          const res = await api.refreshToken();
+          if (res && res.accessToken) {
+            setAccessToken(res.accessToken);
+            fetchUser(res.accessToken);
+          } else {
+            setUser(null);
+            setAccessToken(null);
+            setLoading(false);
+          }
+        } catch {
           setUser(null);
           setAccessToken(null);
           setLoading(false);
         }
-      } catch {
-        setUser(null);
-        setAccessToken(null);
-        setLoading(false);
-      }
-    };
-    tryRefresh();
+      };
+      tryRefresh();
+    }
   }, [fetchUser]);
 
   // Login with Google (redirects to backend)
   const loginWithGoogle = (e, rememberMe) => {
     if (e) e.preventDefault();
-    const loginUrl = `/api/auth/login?returnUrl=${encodeURIComponent(window.location.pathname)}&rememberMe=${rememberMe ? 'true' : 'false'}`;
+    const loginUrl = `${config.apiUrl}/api/auth/login?returnUrl=${encodeURIComponent(window.location.pathname)}&rememberMe=${rememberMe ? 'true' : 'false'}`;
     window.location.href = loginUrl;
   };
 
