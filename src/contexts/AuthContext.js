@@ -96,7 +96,7 @@ export function AuthProvider({ children }) {
       // Set user and create a simple access token
       setUser(userInfo);
       setAccessToken(response.credential);
-      setLoading(false);
+        setLoading(false);
 
       // Store in localStorage for persistence
       localStorage.setItem('user', JSON.stringify(userInfo));
@@ -129,8 +129,8 @@ export function AuthProvider({ children }) {
       }
     } else {
       logger.debug('No saved session found in localStorage');
-    }
-    setLoading(false);
+        }
+        setLoading(false);
   }, []);
 
   // Login with Google (direct OAuth)
