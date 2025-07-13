@@ -139,9 +139,9 @@ export function AuthProvider({ children }) {
     
     logger.logAuthEvent('login_attempt', { rememberMe });
     
-    // Mock OAuth flow for development/testing
-    if (process.env.NODE_ENV === 'development' || typeof window !== 'undefined' && window.Cypress) {
-      logger.info('Using mock OAuth flow for development/testing');
+    // Mock OAuth flow for Cypress tests only
+    if (typeof window !== 'undefined' && window.Cypress) {
+      logger.info('Using mock OAuth flow for Cypress tests');
       
       // Simulate successful login with mock user data
       const mockUserInfo = {
@@ -166,20 +166,16 @@ export function AuthProvider({ children }) {
       return;
     }
     
-    if (window.google && window.google.accounts && googleInitialized) {
-      logger.debug('Prompting Google Sign-In');
-      window.google.accounts.id.prompt((notification) => {
-        if (notification.isNotDisplayed()) {
-          logger.error('Google Sign-In prompt not displayed', { notification });
-        } else if (notification.isSkippedMoment()) {
-          logger.error('Google Sign-In prompt skipped', { notification });
-        } else if (notification.isDismissedMoment()) {
-          logger.info('Google Sign-In prompt dismissed by user');
-        }
-      });
+    // Redirect to Google OAuth in same window for real app
+    if (config.googleClientId) {
+      const redirectUri = encodeURIComponent(`${window.location.origin}/api/auth/callback`);
+      const googleAuthUrl = `https://accounts.google.com/o/oauth2/auth?client_id=${config.googleClientId}&redirect_uri=${redirectUri}&response_type=code&scope=openid%20email%20profile&access_type=offline`;
+      
+      logger.info('Redirecting to Google OAuth in same window');
+      window.location.href = googleAuthUrl;
     } else {
-      logger.error('Google Identity Services not loaded or initialized');
-      alert('Google Sign-In is not available. Please refresh the page and try again.');
+      logger.error('Google Client ID not configured');
+      alert('Google Sign-In is not configured. Please contact support.');
     }
   };
 
