@@ -7,7 +7,10 @@ if not exist "node_modules" (
   echo Installing frontend dependencies...
   npm install
 )
-start "Frontend Dev Server" cmd /k "npm start"
+start /b "Frontend Dev Server" cmd /c "npm start"
+
+echo Waiting for frontend to start...
+timeout /t 3 /nobreak >nul
 
 echo Starting Backend...
 cd backend
@@ -15,7 +18,7 @@ if not exist "bin" (
   echo Building backend...
   dotnet build
 )
-start "Backend Dev Server" cmd /k "dotnet run"
+start /b "Backend Dev Server" cmd /c "dotnet run"
 cd ..
 
 echo.
