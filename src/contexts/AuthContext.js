@@ -168,7 +168,7 @@ export function AuthProvider({ children }) {
     
     // Redirect to Google OAuth in same window for real app
     if (config.googleClientId) {
-      const redirectUri = encodeURIComponent(`${window.location.origin}/api/auth/callback`);
+      const redirectUri = encodeURIComponent(`${config.backendUrl}/api/auth/callback`);
       const googleAuthUrl = `https://accounts.google.com/o/oauth2/auth?client_id=${config.googleClientId}&redirect_uri=${redirectUri}&response_type=code&scope=openid%20email%20profile&access_type=offline`;
       
       logger.info('Redirecting to Google OAuth in same window');
