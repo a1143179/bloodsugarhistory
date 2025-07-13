@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import PropTypes from 'prop-types';
 import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
+import config from '../config/environment';
 import {
   Container,
   Typography,
@@ -53,7 +54,7 @@ import {
 } from 'recharts';
 
 // Backend API URL
-const API_URL = '/api/records';
+const API_URL = `${config.apiUrl}/api/records`;
 
 function Dashboard({ mobilePage, onMobilePageChange }) {
   const { user } = useAuth();
