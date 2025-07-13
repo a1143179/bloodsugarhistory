@@ -8,7 +8,6 @@ const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
-  const [accessToken, setAccessToken] = useState(null);
   const [loading, setLoading] = useState(true);
   const [googleInitialized, setGoogleInitialized] = useState(false);
 
@@ -93,20 +92,17 @@ export function AuthProvider({ children }) {
         name: userInfo.name 
       });
 
-      // Set user and create a simple access token
+      // Set user (access token is handled by backend via cookie)
       setUser(userInfo);
-      setAccessToken(response.credential);
-        setLoading(false);
+      setLoading(false);
 
-      // Store in localStorage for persistence
+      // Store user in localStorage (access token is in HTTP-only cookie)
       localStorage.setItem('user', JSON.stringify(userInfo));
-      localStorage.setItem('accessToken', response.credential);
       
       logger.logAuthEvent('login_success', { userId: userInfo.id, email: userInfo.email });
     } catch (error) {
       logger.logError(error, { context: 'google_oauth_response' });
       setUser(null);
-      setAccessToken(null);
       setLoading(false);
     }
   };
@@ -114,18 +110,15 @@ export function AuthProvider({ children }) {
   // Check for existing session on mount
   useEffect(() => {
     const savedUser = localStorage.getItem('user');
-    const savedToken = localStorage.getItem('accessToken');
     
-    if (savedUser && savedToken) {
+    if (savedUser) {
       try {
         const userInfo = JSON.parse(savedUser);
         setUser(userInfo);
-        setAccessToken(savedToken);
         logger.info('Restored user session from localStorage', { userId: userInfo.id });
       } catch (error) {
         logger.logError(error, { context: 'restore_session' });
         localStorage.removeItem('user');
-        localStorage.removeItem('accessToken');
       }
     } else {
       logger.debug('No saved session found in localStorage');
@@ -208,26 +201,11 @@ export function AuthProvider({ children }) {
         userEmail: data.user?.email 
       });
       
-      // Get JWT token from cookie
-      const getCookie = (name) => {
-        const value = `; ${document.cookie}`;
-        const parts = value.split(`; ${name}=`);
-        if (parts.length === 2) return parts.pop().split(';').shift();
-        return null;
-      };
-      
-      const jwtToken = getCookie('medical_tracker_access_token');
-      logger.info('JWT token from cookie', { 
-        hasJwt: !!jwtToken,
-        jwtLength: jwtToken?.length 
-      });
-      
-      if (data.user && jwtToken) {
-        // Set user and JWT token
+      if (data.user) {
+        // Set user (access token is automatically handled by backend via HTTP-only cookie)
         setUser(data.user);
-        setAccessToken(jwtToken);
         
-        // Store user in localStorage (JWT is in cookie)
+        // Store user in localStorage (access token is in HTTP-only cookie)
         localStorage.setItem('user', JSON.stringify(data.user));
         
         logger.logAuthEvent('login_success', { userId: data.user.id, email: data.user.email });
@@ -238,10 +216,9 @@ export function AuthProvider({ children }) {
       } else {
         logger.error('Invalid response from backend', { 
           hasUser: !!data.user, 
-          hasJwt: !!jwtToken,
           data 
         });
-        throw new Error('No user data received from backend or JWT token not found in cookie');
+        throw new Error('No user data received from backend');
       }
     } catch (error) {
       logger.logError(error, { context: 'oauth_callback' });
@@ -270,16 +247,12 @@ export function AuthProvider({ children }) {
         picture: 'https://example.com/avatar.png'
       };
       
-      const mockCredential = 'mock-credential-token-' + Date.now();
-      
-      // Set user and create a simple access token
+      // Set user (no access token needed for tests)
       setUser(mockUserInfo);
-      setAccessToken(mockCredential);
       setLoading(false);
 
-      // Store in localStorage for persistence
+      // Store user in localStorage
       localStorage.setItem('user', JSON.stringify(mockUserInfo));
-      localStorage.setItem('accessToken', mockCredential);
       
       logger.logAuthEvent('login_success', { userId: mockUserInfo.id, email: mockUserInfo.email });
       return;
@@ -303,9 +276,7 @@ export function AuthProvider({ children }) {
     logger.logAuthEvent('logout_attempt', { userId: user?.id });
     
     setUser(null);
-    setAccessToken(null);
     localStorage.removeItem('user');
-    localStorage.removeItem('accessToken');
     
     // Sign out from Google
     if (window.google && window.google.accounts) {
@@ -321,8 +292,6 @@ export function AuthProvider({ children }) {
     <AuthContext.Provider value={{ 
       user, 
       loading, 
-      accessToken, 
-      setAccessToken, 
       loginWithGoogle, 
       logout,
       googleInitialized 

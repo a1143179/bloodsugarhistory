@@ -8,21 +8,18 @@ class ApiService {
     }
 
     // Make authenticated API request
-    async request(endpoint, options = {}, accessToken = null) {
+    async request(endpoint, options = {}) {
         const url = `${this.baseURL}${endpoint}`;
         const method = options.method || 'GET';
         
-        // Get JWT token from cookie if not provided
-        let jwtToken = accessToken;
-        if (!jwtToken) {
-            const getCookie = (name) => {
-                const value = `; ${document.cookie}`;
-                const parts = value.split(`; ${name}=`);
-                if (parts.length === 2) return parts.pop().split(';').shift();
-                return null;
-            };
-            jwtToken = getCookie('medical_tracker_access_token');
-        }
+        // Get JWT token from cookie
+        const getCookie = (name) => {
+            const value = `; ${document.cookie}`;
+            const parts = value.split(`; ${name}=`);
+            if (parts.length === 2) return parts.pop().split(';').shift();
+            return null;
+        };
+        const jwtToken = getCookie('medical_tracker_access_token');
         
         logger.logApiRequest(method, url, {
             hasAccessToken: !!jwtToken,
@@ -34,7 +31,7 @@ class ApiService {
                 'Content-Type': 'application/json',
                 ...options.headers,
             },
-            credentials: 'include', // Always include cookies for refresh
+            credentials: 'include', // Always include cookies
             ...options,
         };
 
@@ -43,26 +40,9 @@ class ApiService {
         }
 
         try {
-            let response = await fetch(url, configObj);
+            const response = await fetch(url, configObj);
 
             logger.logApiResponse(method, url, response.status);
-
-            if (response.status === 401 && endpoint !== '/api/auth/refresh') {
-                logger.warn('Unauthorized request, attempting token refresh', { endpoint });
-                // Try to refresh token
-                const refreshRes = await this.refreshToken();
-                if (refreshRes && refreshRes.accessToken) {
-                    logger.info('Token refresh successful, retrying original request');
-                    // Retry original request with new access token
-                    configObj.headers.Authorization = `Bearer ${refreshRes.accessToken}`;
-                    response = await fetch(url, configObj);
-                    logger.logApiResponse(method, url, response.status, 'retry');
-                } else {
-                    logger.warn('Token refresh failed, redirecting to login');
-                    window.location.href = '/login';
-                    return null;
-                }
-            }
 
             if (!response.ok) {
                 const errorText = await response.text();
@@ -99,63 +79,38 @@ class ApiService {
         }
     }
 
-    async getCurrentUser(accessToken) {
-        logger.logAuthEvent('get_current_user', { hasToken: !!accessToken });
-        return await this.request('/api/auth/me', {}, accessToken);
-    }
-
-    async refreshToken() {
-        logger.logAuthEvent('refresh_token_attempt');
-        // Backend should read refresh token from HTTP-only cookie
-        try {
-            const response = await fetch(`${this.baseURL}/api/auth/refresh`, {
-                method: 'POST',
-                credentials: 'include',
-                headers: { 'Content-Type': 'application/json' },
-            });
-            if (!response.ok) {
-                logger.warn('Token refresh failed', { status: response.status });
-                return null;
-            }
-            const data = await response.json();
-            logger.logAuthEvent('refresh_token_success');
-            
-            // The new JWT token should be set in the medical_tracker_access_token cookie by the backend
-            // We don't need to manually update localStorage since we're using cookies now
-            return data;
-        } catch (error) {
-            logger.logError(error, { context: 'refresh_token' });
-            return null;
-        }
+    async getCurrentUser() {
+        logger.logAuthEvent('get_current_user');
+        return await this.request('/api/auth/me');
     }
 
     // Blood sugar records endpoints
-    async getRecords(accessToken) {
+    async getRecords() {
         logger.logUserAction('get_records');
-        return await this.request('/api/records', {}, accessToken);
+        return await this.request('/api/records');
     }
 
-    async createRecord(record, accessToken) {
+    async createRecord(record) {
         logger.logUserAction('create_record', { recordLevel: record.level });
         return await this.request('/api/records', {
             method: 'POST',
             body: JSON.stringify(record),
-        }, accessToken);
+        });
     }
 
-    async updateRecord(id, record, accessToken) {
+    async updateRecord(id, record) {
         logger.logUserAction('update_record', { recordId: id, recordLevel: record.level });
         return await this.request(`/api/records/${id}`, {
             method: 'PUT',
             body: JSON.stringify(record),
-        }, accessToken);
+        });
     }
 
-    async deleteRecord(id, accessToken) {
+    async deleteRecord(id) {
         logger.logUserAction('delete_record', { recordId: id });
         return await this.request(`/api/records/${id}`, {
             method: 'DELETE',
-        }, accessToken);
+        });
     }
 
     // Health check

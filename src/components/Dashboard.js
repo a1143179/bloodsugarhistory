@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import config from '../config/environment';
+import api from '../services/api';
 import {
   Container,
   Typography,
@@ -53,8 +54,7 @@ import {
   Bar
 } from 'recharts';
 
-// Backend API URL
-const API_URL = `${config.backendUrl}/api/records`;
+
 
 function Dashboard({ mobilePage, onMobilePageChange }) {
   const { user } = useAuth();
@@ -98,8 +98,7 @@ function Dashboard({ mobilePage, onMobilePageChange }) {
         return;
       }
       
-      const response = await fetch(`${API_URL}?userId=${encodeURIComponent(userId)}`);
-      const data = await response.json();
+      const data = await api.getRecords();
       setRecords(data.sort((a, b) => new Date(b.measurementTime) - new Date(a.measurementTime)));
     } catch (error) {
       showMessage(t('failedToFetchRecords'), 'error');
@@ -144,41 +143,19 @@ function Dashboard({ mobilePage, onMobilePageChange }) {
       }
 
       if (isEditing) {
-        const response = await fetch(`${API_URL}/${currentRecord.id}?userId=${encodeURIComponent(userId)}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ 
-            ...currentRecord, 
-            level: level,
-            measurementTime: new Date(currentRecord.measurementTime).toISOString()
-          }),
+        await api.updateRecord(currentRecord.id, { 
+          ...currentRecord, 
+          level: level,
+          measurementTime: new Date(currentRecord.measurementTime).toISOString()
         });
-        
-        if (!response.ok) {
-          const errorData = await response.json();
-          showMessage(errorData.message || t('failedToSaveRecord'), 'error');
-          return;
-        }
-        
         showMessage(t('recordUpdatedSuccessfully'), 'success');
       } else {
         // Convert local time to UTC before sending to backend
-        const response = await fetch(`${API_URL}?userId=${encodeURIComponent(userId)}`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ 
-            ...currentRecord, 
-            level: level, 
-            measurementTime: new Date(currentRecord.measurementTime).toISOString()
-          }),
+        await api.createRecord({ 
+          ...currentRecord, 
+          level: level, 
+          measurementTime: new Date(currentRecord.measurementTime).toISOString()
         });
-        
-        if (!response.ok) {
-          const errorData = await response.json();
-          showMessage(errorData.message || t('failedToSaveRecord'), 'error');
-          return;
-        }
-        
         showMessage(t('recordAddedSuccessfully'), 'success');
       }
       resetForm();
@@ -223,7 +200,7 @@ function Dashboard({ mobilePage, onMobilePageChange }) {
           return;
         }
         
-        await fetch(`${API_URL}/${id}?userId=${encodeURIComponent(userId)}`, { method: 'DELETE' });
+        await api.deleteRecord(id);
         showMessage(t('recordDeletedSuccessfully'), 'success');
         fetchRecords();
       } catch (error) {
