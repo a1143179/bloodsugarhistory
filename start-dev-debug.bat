@@ -127,15 +127,15 @@ if "%RUN_DB%"=="true" (
   echo Starting PostgreSQL...
   
   REM Check if PostgreSQL container already exists
-  docker ps -a --format "table {{.Names}}" | findstr "bloodsugar-postgres" >nul 2>&1
+  docker ps -a --format "table {{.Names}}" | findstr "medicaltracker-postgres" >nul 2>&1
   if %errorlevel% equ 0 (
       echo PostgreSQL container exists, starting it...
-      docker start bloodsugar-postgres
-      set POSTGRES_CONTAINER=bloodsugar-postgres
+              docker start medicaltracker-postgres
+      set POSTGRES_CONTAINER=medicaltracker-postgres
   ) else (
       echo Creating PostgreSQL container...
-      docker run -d --name bloodsugar-postgres -e POSTGRES_DB=bloodsugar -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=password -p 5432:5432 postgres:15
-      set POSTGRES_CONTAINER=bloodsugar-postgres
+      docker run -d --name medicaltracker-postgres -e POSTGRES_DB=medicaltracker -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=password -p 5432:5432 postgres:15
+      set POSTGRES_CONTAINER=medicaltracker-postgres
   )
   
   REM Wait for PostgreSQL to be ready
@@ -258,10 +258,10 @@ if "%RUN_DB%"=="true" (
     echo [DEBUG] Database was skipped, checking if already running...
     REM Database was skipped, check if there's already a container running
     echo Checking if PostgreSQL is already running...
-    docker ps --format "table {{.Names}}" | findstr "bloodsugar-postgres" >nul 2>&1
+    docker ps --format "table {{.Names}}" | findstr "medicaltracker-postgres" >nul 2>&1
     if %errorlevel% equ 0 (
-      echo [DEBUG] Found bloodsugar-postgres container
-      docker exec bloodsugar-postgres pg_isready -U postgres >nul 2>&1
+      echo [DEBUG] Found medicaltracker-postgres container
+      docker exec medicaltracker-postgres pg_isready -U postgres >nul 2>&1
       if %errorlevel% equ 0 (
         echo PostgreSQL is already running on localhost:5432
         set "SERVICES_RUNNING=!SERVICES_RUNNING!Database "
@@ -269,7 +269,7 @@ if "%RUN_DB%"=="true" (
         echo PostgreSQL container exists but is not responding
       )
     ) else (
-      echo [DEBUG] No bloodsugar-postgres container found
+      echo [DEBUG] No medicaltracker-postgres container found
       echo Database skipped (port 5432 in use, no container found)
     )
   )
@@ -319,7 +319,7 @@ if "%RUN_DB%"=="true" if "%RUN_BACKEND%"=="true" if "%RUN_FRONTEND%"=="true" (
   echo Application: http://localhost:3000
   echo Backend API: http://localhost:3000/api
   echo Database: localhost:5432
-  echo    Database Name: bloodsugar
+  echo    Database Name: medicaltracker
   echo    Username: postgres
   echo    Password: password
   echo.
@@ -342,7 +342,7 @@ if "%RUN_DB%"=="true" if "%RUN_BACKEND%"=="true" if "%RUN_FRONTEND%"=="true" (
   REM Database + Backend mode
   echo Backend API: http://localhost:3000/api
   echo Database: localhost:5432
-  echo    Database Name: bloodsugar
+  echo    Database Name: medicaltracker
   echo    Username: postgres
   echo    Password: password
   
@@ -350,14 +350,14 @@ if "%RUN_DB%"=="true" if "%RUN_BACKEND%"=="true" if "%RUN_FRONTEND%"=="true" (
   REM Database + Frontend mode
   echo Frontend: http://localhost:3001
   echo Database: localhost:5432
-  echo    Database Name: bloodsugar
+  echo    Database Name: medicaltracker
   echo    Username: postgres
   echo    Password: password
   
 ) else if "%RUN_DB%"=="true" (
   REM Database only mode
   echo Database: localhost:5432
-  echo    Database Name: bloodsugar
+  echo    Database Name: medicaltracker
   echo    Username: postgres
   echo    Password: password
   

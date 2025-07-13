@@ -8,7 +8,7 @@ on:
 
 env:
   BUILD_CONFIGURATION: 'Release'
-  AZURE_WEBAPP_NAME: 'bloodsugarhistory' # Replace with your Azure Web App name
+  AZURE_WEBAPP_NAME: 'medicaltracker' # Replace with your Azure Web App name
 
 jobs:
   test-and-build:
@@ -17,7 +17,7 @@ jobs:
       postgres:
         image: postgres:15
         env:
-          POSTGRES_DB: bloodsugar
+          POSTGRES_DB: medicaltracker
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: password
         ports:
@@ -42,9 +42,6 @@ jobs:
 
     - name: Install backend dependencies
       run: dotnet restore ./backend/backend.csproj
-
-    - name: Build backend
-      run: dotnet build ./backend/backend.csproj --configuration Release
 
     # - name: Run xunit tests
     #   run: dotnet test ./xunit/Backend.Tests.csproj --verbosity normal
@@ -74,7 +71,7 @@ jobs:
         nohup dotnet run --urls http://localhost:3000 &
         sleep 10
       env:
-        ConnectionStrings__DefaultConnection: "Host=localhost;Port=5432;Database=bloodsugar;Username=postgres;Password=password"
+        ConnectionStrings__DefaultConnection: "Host=localhost;Port=5432;Database=medicaltracker;Username=postgres;Password=password"
         ASPNETCORE_ENVIRONMENT: "Development"
 
     # - name: Run Cypress E2E tests
@@ -90,7 +87,7 @@ jobs:
         cd backend
         dotnet publish -c Release -o ./publish
       env:
-        ConnectionStrings__DefaultConnection: "Host=localhost;Port=5432;Database=bloodsugar;Username=postgres;Password=password"
+        ConnectionStrings__DefaultConnection: "Host=localhost;Port=5432;Database=medicaltracker;Username=postgres;Password=password"
 
   deploy:
     runs-on: ubuntu-latest
