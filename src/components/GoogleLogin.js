@@ -6,30 +6,51 @@ import GoogleIcon from '@mui/icons-material/Google';
 import { Box, Grid, Paper, Typography, Button, useTheme, useMediaQuery, Divider, Stack, Avatar, CircularProgress, Checkbox, FormControlLabel } from '@mui/material';
 
 const GoogleLogin = () => {
-  const { loginWithGoogle } = useAuth();
+  const { loginWithGoogle, googleInitialized } = useAuth();
   const { t } = useLanguage();
   const theme = useTheme();
   const isTestMobile = typeof window !== 'undefined' && window.Cypress && window.localStorage.getItem('forceMobile') === 'true';
   const isMobile = useMediaQuery(theme.breakpoints.down('md')) || isTestMobile;
   const [loading, setLoading] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
+  const [googleLoaded, setGoogleLoaded] = useState(false);
 
   // Initialize Google Sign-In button
   useEffect(() => {
-    if (window.google && window.google.accounts) {
-      window.google.accounts.id.renderButton(
-        document.getElementById('google-signin-button'),
-        {
-          theme: 'outline',
-          size: 'large',
-          text: 'signin_with',
-          shape: 'rectangular',
-          width: isMobile ? '100%' : '280px',
-          height: '48px'
+    const initGoogleButton = () => {
+      if (window.google && window.google.accounts && googleInitialized) {
+        try {
+          window.google.accounts.id.renderButton(
+            document.getElementById('google-signin-button'),
+            {
+              theme: 'outline',
+              size: 'large',
+              text: 'signin_with',
+              shape: 'rectangular',
+              width: isMobile ? '100%' : '280px',
+              height: '48px'
+            }
+          );
+          setGoogleLoaded(true);
+          console.log('Google Sign-In button rendered successfully');
+        } catch (error) {
+          console.error('Error rendering Google button:', error);
+          setGoogleLoaded(false);
         }
-      );
-    }
-  }, [isMobile]);
+      } else {
+        // Retry after a short delay if Google script hasn't loaded yet
+        setTimeout(initGoogleButton, 100);
+      }
+    };
+
+    // Start initialization
+    initGoogleButton();
+
+    // Cleanup function
+    return () => {
+      setGoogleLoaded(false);
+    };
+  }, [isMobile, googleInitialized]);
 
   const handleLogin = async (e) => {
     setLoading(true);
@@ -144,9 +165,32 @@ const GoogleLogin = () => {
                 mb: 2,
                 display: 'flex',
                 justifyContent: 'center',
-                width: { xs: '100%', md: '280px' }
+                width: { xs: '100%', md: '280px' },
+                minHeight: '48px' // Ensure space for the button
               }}
             />
+
+            {/* Fallback button if Google button doesn't load */}
+            {!googleLoaded && (
+              <Button
+                variant="contained"
+                color="primary"
+                startIcon={<GoogleIcon />}
+                onClick={handleLogin}
+                className="google-signin-button"
+                sx={{ 
+                  py: 1.5, 
+                  fontWeight: 600, 
+                  fontSize: '1rem', 
+                  mb: 2,
+                  width: { xs: '100%', md: '280px' }
+                }}
+                data-testid="google-signin-button"
+                disabled={loading}
+              >
+                {t('signInWithGoogle')}
+              </Button>
+            )}
 
             <FormControlLabel
               control={

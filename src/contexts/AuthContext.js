@@ -9,23 +9,27 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [accessToken, setAccessToken] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [googleInitialized, setGoogleInitialized] = useState(false);
 
   // Initialize Google Identity Services
   useEffect(() => {
+    // Check if script is already loaded
+    if (window.google && window.google.accounts) {
+      initializeGoogle();
+      return;
+    }
+
     // Load Google Identity Services script
     const script = document.createElement('script');
     script.src = 'https://accounts.google.com/gsi/client';
     script.async = true;
     script.defer = true;
     script.onload = () => {
-      if (window.google) {
-        window.google.accounts.id.initialize({
-          client_id: 'YOUR_GOOGLE_CLIENT_ID', // Replace with your actual client ID
-          callback: handleCredentialResponse,
-          auto_select: false,
-          cancel_on_tap_outside: true,
-        });
-      }
+      console.log('Google Identity Services script loaded');
+      initializeGoogle();
+    };
+    script.onerror = () => {
+      console.error('Failed to load Google Identity Services script');
     };
     document.head.appendChild(script);
 
@@ -38,9 +42,31 @@ export function AuthProvider({ children }) {
     };
   }, []);
 
+  const initializeGoogle = useCallback(() => {
+    if (window.google && window.google.accounts) {
+      try {
+        window.google.accounts.id.initialize({
+          client_id: 'YOUR_GOOGLE_CLIENT_ID', // Replace with your actual client ID
+          callback: handleCredentialResponse,
+          auto_select: false,
+          cancel_on_tap_outside: true,
+        });
+        setGoogleInitialized(true);
+        console.log('Google Identity Services initialized successfully');
+      } catch (error) {
+        console.error('Error initializing Google Identity Services:', error);
+        setGoogleInitialized(false);
+      }
+    } else {
+      console.error('Google Identity Services not available');
+      setGoogleInitialized(false);
+    }
+  }, []);
+
   // Handle Google OAuth response
   const handleCredentialResponse = async (response) => {
     try {
+      console.log('Google OAuth response received');
       // Decode the JWT token from Google
       const payload = JSON.parse(atob(response.credential.split('.')[1]));
       
@@ -51,6 +77,8 @@ export function AuthProvider({ children }) {
         name: payload.name,
         picture: payload.picture
       };
+
+      console.log('User info extracted:', userInfo);
 
       // Set user and create a simple access token
       setUser(userInfo);
@@ -78,6 +106,7 @@ export function AuthProvider({ children }) {
         const userInfo = JSON.parse(savedUser);
         setUser(userInfo);
         setAccessToken(savedToken);
+        console.log('Restored user session from localStorage');
       } catch (error) {
         console.error('Error parsing saved user data:', error);
         localStorage.removeItem('user');
@@ -91,19 +120,26 @@ export function AuthProvider({ children }) {
   const loginWithGoogle = (e, rememberMe) => {
     if (e) e.preventDefault();
     
-    if (window.google && window.google.accounts) {
+    if (window.google && window.google.accounts && googleInitialized) {
+      console.log('Prompting Google Sign-In');
       window.google.accounts.id.prompt((notification) => {
-        if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+        if (notification.isNotDisplayed()) {
           console.error('Google Sign-In prompt not displayed:', notification);
+        } else if (notification.isSkippedMoment()) {
+          console.error('Google Sign-In prompt skipped:', notification);
+        } else if (notification.isDismissedMoment()) {
+          console.log('Google Sign-In prompt dismissed');
         }
       });
     } else {
-      console.error('Google Identity Services not loaded');
+      console.error('Google Identity Services not loaded or initialized');
+      alert('Google Sign-In is not available. Please refresh the page and try again.');
     }
   };
 
   // Logout
   const logout = () => {
+    console.log('Logging out user');
     setUser(null);
     setAccessToken(null);
     localStorage.removeItem('user');
@@ -119,7 +155,15 @@ export function AuthProvider({ children }) {
 
   // Provide context
   return (
-    <AuthContext.Provider value={{ user, loading, accessToken, setAccessToken, loginWithGoogle, logout }}>
+    <AuthContext.Provider value={{ 
+      user, 
+      loading, 
+      accessToken, 
+      setAccessToken, 
+      loginWithGoogle, 
+      logout,
+      googleInitialized 
+    }}>
       {children}
     </AuthContext.Provider>
   );
