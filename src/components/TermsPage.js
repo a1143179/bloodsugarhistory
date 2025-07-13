@@ -26,7 +26,7 @@ const TermsPage = () => (
       </Typography>
       <Typography variant="h6" sx={{ mt: 2 }}>5. Disclaimer</Typography>
       <Typography variant="body1" paragraph>
-        The application is provided on an "AS IS" and "AS AVAILABLE" basis. We make no warranties, express or implied, regarding the application.
+        The application is provided on an &quot;AS IS&quot; and &quot;AS AVAILABLE&quot; basis. We make no warranties, express or implied, regarding the application.
       </Typography>
       <Typography variant="h6" sx={{ mt: 2 }}>6. Limitation of Liability</Typography>
       <Typography variant="body1" paragraph>

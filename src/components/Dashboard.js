@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import PropTypes from 'prop-types';
 import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import {
@@ -1095,5 +1096,10 @@ function Dashboard({ mobilePage, onMobilePageChange }) {
     </Box>
   );
 }
+
+Dashboard.propTypes = {
+  mobilePage: PropTypes.string.isRequired,
+  onMobilePageChange: PropTypes.func.isRequired,
+};
 
 export default Dashboard; 

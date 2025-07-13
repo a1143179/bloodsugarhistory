@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import PropTypes from 'prop-types';
 import {
   AppBar,
   Toolbar,
@@ -289,6 +290,10 @@ const Header = ({ onMobileNavigate }) => {
         </Snackbar>
     </>
   );
+};
+
+Header.propTypes = {
+  onMobileNavigate: PropTypes.func.isRequired,
 };
 
 export default Header; 

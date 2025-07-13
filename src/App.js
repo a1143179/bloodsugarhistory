@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import PropTypes from 'prop-types';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
@@ -31,6 +32,10 @@ const AppWithProviders = ({ children }) => {
       </AuthProvider>
     </LanguageProvider>
   );
+};
+
+AppWithProviders.propTypes = {
+  children: PropTypes.node.isRequired,
 };
 
 // Main App Layout with Header
@@ -112,6 +117,10 @@ const ProtectedRoute = ({ children }) => {
   return children;
 };
 
+ProtectedRoute.propTypes = {
+  children: PropTypes.node.isRequired,
+};
+
 // Public Route Component - redirects authenticated users to dashboard
 const PublicRoute = ({ children }) => {
   const { user, loading } = useAuth();
@@ -135,6 +144,10 @@ const PublicRoute = ({ children }) => {
   }
 
   return children;
+};
+
+PublicRoute.propTypes = {
+  children: PropTypes.node.isRequired,
 };
 
 function App() {
