@@ -139,6 +139,33 @@ export function AuthProvider({ children }) {
     
     logger.logAuthEvent('login_attempt', { rememberMe });
     
+    // Mock OAuth flow for development/testing
+    if (process.env.NODE_ENV === 'development' || typeof window !== 'undefined' && window.Cypress) {
+      logger.info('Using mock OAuth flow for development/testing');
+      
+      // Simulate successful login with mock user data
+      const mockUserInfo = {
+        id: '1234567890',
+        email: 'testuser@example.com',
+        name: 'Test User',
+        picture: 'https://example.com/avatar.png'
+      };
+      
+      const mockCredential = 'mock-credential-token-' + Date.now();
+      
+      // Set user and create a simple access token
+      setUser(mockUserInfo);
+      setAccessToken(mockCredential);
+      setLoading(false);
+
+      // Store in localStorage for persistence
+      localStorage.setItem('user', JSON.stringify(mockUserInfo));
+      localStorage.setItem('accessToken', mockCredential);
+      
+      logger.logAuthEvent('login_success', { userId: mockUserInfo.id, email: mockUserInfo.email });
+      return;
+    }
+    
     if (window.google && window.google.accounts && googleInitialized) {
       logger.debug('Prompting Google Sign-In');
       window.google.accounts.id.prompt((notification) => {
