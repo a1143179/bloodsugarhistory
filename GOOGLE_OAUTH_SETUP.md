@@ -43,25 +43,30 @@ If this is your first OAuth app, you'll need to configure the consent screen:
 
 ## Step 6: Configure Authorized Redirect URIs
 
+**IMPORTANT**: Google should redirect to your BACKEND, not frontend.
+
 Add these redirect URIs:
 
 **For Development:**
-- `http://localhost:3000/api/auth/callback`
+- `http://localhost:55556/api/auth/callback`
 
 **For Production (when you deploy):**
-- `https://yourdomain.com/api/auth/callback`
-- `https://medicaltracker.azurewebsites.net/api/auth/callback`
+- `https://your-backend-domain.com/api/auth/callback`
+- `https://medicaltracker-backend.azurewebsites.net/api/auth/callback`
 
 ## Step 7: Configure Authorized JavaScript Origins
 
 Add these JavaScript origins:
 
 **For Development:**
-- `http://localhost:3000`
+- `http://localhost:55555` (Frontend)
+- `http://localhost:55556` (Backend)
 
 **For Production (when you deploy):**
-- `https://yourdomain.com`
-- `https://medicaltracker.azurewebsites.net`
+- `https://your-frontend-domain.com`
+- `https://your-backend-domain.com`
+- `https://medicaltracker.azurewebsites.net` (Frontend)
+- `https://medicaltracker-backend.azurewebsites.net` (Backend)
 
 ## Step 8: Get Your Credentials
 
@@ -96,9 +101,26 @@ Add these JavaScript origins:
    ./start-dev.sh
    ```
 
-2. Go to `http://localhost:3000`
+2. Go to `http://localhost:55555`
 3. Click the "Sign in with Google" button
 4. You should be redirected to Google's login page
+
+## OAuth Flow Explanation
+
+The application uses a **backend proxy approach** for security:
+
+1. **Frontend** (`localhost:55555`) → User clicks "Login with Google"
+2. **Frontend** → Redirects to **Backend** (`localhost:55556/api/auth/login`)
+3. **Backend** → Redirects to **Google OAuth**
+4. **Google** → Redirects to **Backend** (`localhost:55556/api/auth/callback`)
+5. **Backend** → Processes OAuth, creates JWT, sets refresh token cookie
+6. **Backend** → Redirects to **Frontend** (`localhost:55555/dashboard`)
+
+This approach ensures:
+- OAuth secrets stay secure on the backend
+- JWTs are properly signed by the backend
+- HTTP-only refresh token cookies are set correctly
+- User data is properly stored/updated in the database
 
 ## Troubleshooting
 
@@ -107,8 +129,9 @@ Add these JavaScript origins:
 - Check that the Client ID is not empty or contains placeholder text
 
 ### "redirect_uri_mismatch"
-- Verify that `http://localhost:3000/api/auth/callback` is added to your Google OAuth redirect URIs
+- Verify that `http://localhost:55556/api/auth/callback` is added to your Google OAuth redirect URIs
 - Make sure there are no extra spaces or typos
+- **Note**: The redirect URI should point to your BACKEND, not frontend
 
 ### "invalid_client"
 - Check that your Client Secret is correct
@@ -130,8 +153,4 @@ Once you have OAuth working locally:
 
 ## Need Help?
 
-If you encounter issues:
-1. Check the browser's developer console for errors
-2. Check the backend logs for detailed error messages
-3. Verify your Google OAuth configuration matches this guide exactly
-4. Make sure your application is running on the correct port (3000) 
+If you encounter issues: 
