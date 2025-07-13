@@ -159,6 +159,21 @@ export function AuthProvider({ children }) {
       setLoading(true);
       logger.info('Starting OAuth callback processing', { codeLength: code.length });
       
+      // First, test if backend is accessible
+      try {
+        const healthResponse = await fetch(`${config.backendUrl}/api/health`, {
+          method: 'GET',
+          credentials: 'include'
+        });
+        logger.info('Backend health check', { 
+          status: healthResponse.status, 
+          ok: healthResponse.ok 
+        });
+      } catch (healthError) {
+        logger.error('Backend not accessible', { error: healthError.message });
+        throw new Error('Backend server is not running or not accessible. Please ensure the backend is started on port 55556.');
+      }
+      
       // Call backend to exchange code for JWT token and user info
       const response = await fetch(`${config.backendUrl}/api/auth/callback?code=${code}`, {
         method: 'GET',
@@ -181,7 +196,7 @@ export function AuthProvider({ children }) {
         
         // If backend endpoint doesn't exist (404), show helpful message
         if (response.status === 404) {
-          throw new Error('Backend OAuth callback endpoint not found. Please ensure the backend is running and the endpoint is implemented.');
+          throw new Error('Backend OAuth callback endpoint not found. Please ensure the backend has implemented the /api/auth/callback endpoint.');
         }
         
         throw new Error(`Backend error: ${response.status} - ${errorText}`);
