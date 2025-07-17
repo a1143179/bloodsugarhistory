@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useRef, useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import LocalHospitalIcon from '@mui/icons-material/LocalHospital';
@@ -6,7 +6,7 @@ import GoogleIcon from '@mui/icons-material/Google';
 import { Box, Grid, Paper, Typography, Button, useTheme, useMediaQuery, Divider, Stack, Avatar, CircularProgress, Checkbox, FormControlLabel } from '@mui/material';
 
 const GoogleLogin = () => {
-  const { loginWithGoogle, googleInitialized } = useAuth();
+  const { loginWithGoogle } = useAuth();
   const { t } = useLanguage();
   const theme = useTheme();
   const isTestMobile = typeof window !== 'undefined' && window.Cypress && window.localStorage.getItem('forceMobile') === 'true';
