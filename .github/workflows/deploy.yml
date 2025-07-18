@@ -7,7 +7,7 @@ on:
     branches: [ main ]
 
 env:
-  AZURE_WEBAPP_NAME: 'bloodsugartracker'
+  AZURE_WEBAPP_NAME: 'bloodsugarhistory'
 
 jobs:
   build-and-deploy:
