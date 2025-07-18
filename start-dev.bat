@@ -1,86 +1,51 @@
 @echo off
-setlocal enabledelayedexpansion
+echo Starting Blood Sugar History Tracker (React App)...
 
-REM Check for --backend flag
-set BACKEND_ONLY=false
-if "%1"=="--backend" set BACKEND_ONLY=true
+REM Check if port 3000 is available
+netstat -an | findstr ":3000" >nul
+if %errorlevel% equ 0 (
+    echo Port 3000 is already in use. Please close any applications using this port.
+    pause
+    exit /b 1
+)
 
-if "%BACKEND_ONLY%"=="true" (
-    echo Starting Backend Only...
-    echo.
-    
-    echo Checking port availability...
-    echo Checking port 3000 (Backend)...
-    netstat -an | findstr ":3000 " | findstr "LISTENING" >nul
-    if %errorlevel% equ 0 (
-        echo ERROR: Port 3000 is already in use!
-        echo Please stop the service using port 3000 and try again.
+REM Check if Node.js is installed
+node --version >nul 2>&1
+if %errorlevel% neq 0 (
+    echo Node.js is not installed. Please install Node.js first.
+    pause
+    exit /b 1
+)
+
+REM Check if npm is installed
+npm --version >nul 2>&1
+if %errorlevel% neq 0 (
+    echo npm is not installed. Please install npm first.
+    pause
+    exit /b 1
+)
+
+REM Install dependencies if node_modules doesn't exist
+if not exist "node_modules" (
+    echo Installing dependencies...
+    npm install
+    if %errorlevel% neq 0 (
+        echo Failed to install dependencies.
         pause
         exit /b 1
     )
-    echo Port 3000 is available.
-    
-    echo Starting Backend...
-    cd backend
-    echo Starting backend server...
-    start "Backend Dev Server" cmd /k "dotnet run --urls http://localhost:3000"
-    cd ..
-    
-    echo.
-    echo Backend server is starting in a new window...
-    echo Backend will be available at: http://localhost:3000
-    echo.
-    echo Script completed. Backend server is running in a separate window.
-    exit /b 0
 )
 
-echo Starting Medical Tracker Development Environment...
+echo.
+echo Starting React development server...
+echo The app will be available at: http://localhost:3000
+echo.
+echo Press Ctrl+C to stop the server
 echo.
 
-echo Checking port availability...
-
-echo Checking port 3001 (Frontend)...
-netstat -an | findstr ":3001 " | findstr "LISTENING" >nul
-if %errorlevel% equ 0 (
-    echo ERROR: Port 3001 is already in use!
-    echo Please stop the service using port 3001 and try again.
-    pause
-    exit /b 1
-)
-echo Port 3001 is available.
-
-echo Checking port 3000 (Backend)...
-netstat -an | findstr ":3000 " | findstr "LISTENING" >nul
-if %errorlevel% equ 0 (
-    echo ERROR: Port 3000 is already in use!
-    echo Please stop the service using port 3000 and try again.
-    pause
-    exit /b 1
-)
-echo Port 3000 is available.
-
-echo All ports are available. Starting servers...
-echo.
-
-echo Starting Frontend...
-if not exist "node_modules" (
-  echo Installing frontend dependencies...
-  npm install
-)
-start "Frontend Dev Server" cmd /k "set PORT=3001 && npm start"
-
-echo Waiting for frontend to start...
-timeout /t 3 /nobreak >nul
-
-echo Starting Backend...
-cd backend
-echo Starting backend server...
-start "Backend Dev Server" cmd /k "dotnet run --urls http://localhost:3000"
-cd ..
+REM Start the React development server
+npm start
 
 echo.
-echo Development servers are starting in new windows...
-echo Frontend will be available at: http://localhost:3001
-echo Backend will be available at: http://localhost:3000
-echo.
-echo Script completed. Servers are running in separate windows. 
+echo Development server stopped.
+pause 

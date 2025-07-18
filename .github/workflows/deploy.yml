@@ -1,4 +1,4 @@
-name: Deploy Redirect Page
+name: Deploy React App
 
 on:
   push:
@@ -7,39 +7,32 @@ on:
     branches: [ main ]
 
 env:
-  AZURE_WEBAPP_NAME: 'bloodsugarhistory'
+  AZURE_WEBAPP_NAME: 'bloodsugartracker'
 
 jobs:
-  deploy:
+  build-and-deploy:
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Create deployment package
-        run: |
-          # Clean any existing deployment artifacts
-          rm -rf deploy
-          mkdir -p deploy
-          
-          # Copy only the redirect page and web.config
-          cp public/index.html deploy/
-          cp public/web.config deploy/
-          cp public/favicon.ico deploy/ 2>/dev/null || echo "No favicon found"
-          
-          # Create a .deployment file to ensure clean deployment
-          echo "[config]" > deploy/.deployment
-          echo "SCM_DO_BUILD_DURING_DEPLOYMENT=false" >> deploy/.deployment
-          
-          # List contents to verify
-          echo "Deployment package contents:"
-          ls -la deploy/
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build React app
+        run: npm run build
 
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
         with:
           app-name: ${{ env.AZURE_WEBAPP_NAME }}
           publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }} 
-          package: deploy/
+          package: build/
           clean: true 

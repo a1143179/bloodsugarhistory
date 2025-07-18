@@ -1,94 +1,74 @@
-# Medical Tracker Frontend
+# Blood Sugar History Tracker - Redirect Site
 
-A modern React application for tracking blood sugar history and analytics.
+This is a React application that serves as a redirect page for the Blood Sugar History Tracker. The main application has been moved to a new location.
 
-## Quick Start
+## 🚀 Quick Start
 
 ### Prerequisites
-- **Node.js** (v16+ recommended)
-- **npm** (comes with Node.js)
+- Node.js (version 18 or higher)
+- npm
 
-### First-Time Setup
+### Development
+1. Clone the repository
+2. Install dependencies: `npm install`
+3. Start development server: `npm start` or run `start-dev.bat`
+4. Open [http://localhost:3000](http://localhost:3000) in your browser
 
-1. **Clone the repository**:
-   ```bash
-   git clone <repository-url>
-   cd medical-tracker-frontend
-   ```
-
-2. **Setup Google OAuth (Required)**:
-   - Copy `backend\appsettings.Development.json.example` to `backend\appsettings.Development.json`
-   - Add your Google OAuth credentials to `backend\appsettings.Development.json`:
-     - Replace `YOUR_GOOGLE_CLIENT_ID_HERE` with your actual Google Client ID
-     - Replace `YOUR_GOOGLE_CLIENT_SECRET_HERE` with your actual Google Client Secret
-   - See [Google OAuth Setup Guide](GOOGLE_OAUTH_SETUP.md) for detailed instructions
-
-3. **Install dependencies and start the app**:
-   ```bash
-   npm install
-   npm start
-   ```
-
-4. **Access the application** at [http://localhost:55555](http://localhost:55555)
-
-## Project Structure
-```
-medical-tracker-frontend/
-├── public/        # Static assets
-├── src/           # React source code
-├── cypress/       # End-to-end tests
-├── start-dev.bat  # Windows startup script (frontend only)
-├── start-dev.sh   # Linux/Mac startup script (frontend only)
-└── README.md      # This file
-```
-
-## Features
-- **Blood Sugar Tracking**: Add, edit, and delete blood sugar records
-- **Analytics Dashboard**: Charts and statistics for blood sugar trends
-- **Responsive Design**: Works on desktop and mobile devices
-- **Multi-language Support**: Internationalization support
-
-## Frontend Testing
-
-The project includes comprehensive Cypress tests for the frontend:
-
+### Production Build
 ```bash
-# Run Cypress tests
-npm run cypress:run
-
-# Open Cypress UI
-npm run cypress:open
+npm run build
 ```
 
-## Troubleshooting
+## 📋 Features
 
-- **Port Already in Use**: Make sure port 3000 is free before starting the app.
-- **Node.js Not Installed**: Download from [nodejs.org](https://nodejs.org/).
-- **Dependency Issues**: Run `npm install` again in the project root directory.
+- **Automatic Redirect**: Automatically redirects users to the new application after 10 seconds
+- **Manual Redirect**: Users can click "Redirect Now" to immediately go to the new site
+- **Responsive Design**: Works on desktop and mobile devices
+- **Modern UI**: Clean, modern interface with smooth animations
 
-## Development Scripts
+## 🔗 New Application Location
 
-- **Windows**: Use `start-dev.bat` (starts frontend only)
-- **Linux/Mac**: Use `./start-dev.sh` (starts frontend only)
+The main Blood Sugar History Tracker application is now available at:
+**https://medicaltracker.azurewebsites.net**
 
-## Manual Setup (Alternative to setup-dev.bat)
+## 🚀 Deployment
 
-If you need to manually set up the development environment:
+This application is automatically deployed to Azure when changes are pushed to the main branch via GitHub Actions.
 
-1. **Create appsettings.Development.json**:
-   ```bash
-   copy backend\appsettings.Development.json.example backend\appsettings.Development.json
-   ```
+### Deployment Details
+- **Azure App Name**: bloodsugartracker
+- **URL**: https://bloodsugartracker.azurewebsites.net
+- **Deployment Trigger**: Push to main branch
 
-2. **Add Google OAuth credentials** to `backend\appsettings.Development.json`:
-   - Replace `YOUR_GOOGLE_CLIENT_ID_HERE` with your actual Google Client ID
-   - Replace `YOUR_GOOGLE_CLIENT_SECRET_HERE` with your actual Google Client Secret
+## 🛠️ Technology Stack
 
-3. **Start the application**:
-   ```bash
-   start-dev.bat
-   ```
+- **Frontend**: React 19
+- **Styling**: CSS3 with modern features (backdrop-filter, gradients)
+- **Build Tool**: Create React App
+- **Deployment**: Azure Web Apps with GitHub Actions
 
----
+## 📁 Project Structure
 
-For any issues or feature requests, please open an issue in this repository.
+```
+bloodsugerhistory/
+├── public/                 # Static files
+├── src/                    # React source code
+│   ├── components/         # React components
+│   │   ├── RedirectPage.js # Main redirect component
+│   │   └── RedirectPage.css
+│   ├── App.js             # Main app component
+│   └── index.js           # App entry point
+├── .github/workflows/     # GitHub Actions workflows
+└── package.json           # Dependencies and scripts
+```
+
+## 🔧 Available Scripts
+
+- `npm start` - Start development server
+- `npm run build` - Build for production
+- `npm test` - Run tests
+- `npm run eject` - Eject from Create React App
+
+## 📝 License
+
+This project is part of the Blood Sugar History Tracker application.
