@@ -21,6 +21,7 @@ jobs:
         run: |
           mkdir -p deploy
           cp public/index.html deploy/
+          cp public/web.config deploy/
           cp public/favicon.ico deploy/ 2>/dev/null || echo "No favicon found"
 
       - name: Deploy to Azure Web App
