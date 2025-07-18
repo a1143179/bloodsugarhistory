@@ -1,18 +1,31 @@
 @echo off
-echo Starting Redirect Page Test Environment...
+echo Starting Medical Tracker Development Environment...
 echo.
 
-echo Installing http-server if not available...
-npm install -g http-server 2>nul
+echo Starting Frontend...
+if not exist "node_modules" (
+  echo Installing frontend dependencies...
+  npm install
+)
+start /b "Frontend Dev Server" cmd /c "set PORT=3001 && npm start"
 
-echo Starting local server for redirect page...
-cd public
-start /b "Local Redirect Server" cmd /c "http-server -p 3000 -o"
+echo Waiting for frontend to start...
+timeout /t 3 /nobreak >nul
+
+echo Starting Backend...
+cd backend
+if not exist "bin" (
+  echo Building backend...
+  dotnet build
+)
+start /b "Backend Dev Server" cmd /c "dotnet run --urls http://localhost:3000"
+cd ..
 
 echo.
-echo Redirect page is now available at: http://localhost:3000
-echo This will show the redirect page that counts down to https://medicaltracker.azurewebsites.net
+echo Development servers are starting...
+echo Frontend will be available at: http://localhost:3001
+echo Backend will be available at: http://localhost:3000
 echo.
-echo Press any key to exit this script (server will continue running)...
+echo Press any key to exit this script (servers will continue running)...
 pause >nul
  
