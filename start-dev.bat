@@ -2,6 +2,31 @@
 echo Starting Medical Tracker Development Environment...
 echo.
 
+echo Checking port availability...
+
+echo Checking port 3001 (Frontend)...
+netstat -an | findstr ":3001 " | findstr "LISTENING" >nul
+if %errorlevel% equ 0 (
+    echo ERROR: Port 3001 is already in use!
+    echo Please stop the service using port 3001 and try again.
+    pause
+    exit /b 1
+)
+echo Port 3001 is available.
+
+echo Checking port 3000 (Backend)...
+netstat -an | findstr ":3000 " | findstr "LISTENING" >nul
+if %errorlevel% equ 0 (
+    echo ERROR: Port 3000 is already in use!
+    echo Please stop the service using port 3000 and try again.
+    pause
+    exit /b 1
+)
+echo Port 3000 is available.
+
+echo All ports are available. Starting servers...
+echo.
+
 echo Starting Frontend...
 if not exist "node_modules" (
   echo Installing frontend dependencies...
