@@ -7,7 +7,7 @@ if not exist "node_modules" (
   echo Installing frontend dependencies...
   npm install
 )
-start /b "Frontend Dev Server" cmd /c "set PORT=3001 && npm start"
+start "Frontend Dev Server" cmd /k "set PORT=3001 && npm start"
 
 echo Waiting for frontend to start...
 timeout /t 3 /nobreak >nul
@@ -18,14 +18,14 @@ if not exist "bin" (
   echo Building backend...
   dotnet build
 )
-start /b "Backend Dev Server" cmd /c "dotnet run --urls http://localhost:3000"
+start "Backend Dev Server" cmd /k "dotnet run --urls http://localhost:3000"
 cd ..
 
 echo.
-echo Development servers are starting...
+echo Development servers are starting in new windows...
 echo Frontend will be available at: http://localhost:3001
 echo Backend will be available at: http://localhost:3000
 echo.
-echo Press any key to exit this script (servers will continue running)...
+echo Press any key to exit this script (servers will continue running in their windows)...
 pause >nul
  
