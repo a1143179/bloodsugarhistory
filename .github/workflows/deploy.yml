@@ -29,6 +29,13 @@ jobs:
       - name: Build React app
         run: npm run build
 
+      - name: List build directory contents (debug)
+        run: |
+          pwd
+          ls -l
+          echo "Contents of build directory:"
+          ls -l build
+
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
         with:
