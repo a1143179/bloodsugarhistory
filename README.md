@@ -36,8 +36,8 @@ The main Blood Sugar History Tracker application is now available at:
 This application is automatically deployed to Azure when changes are pushed to the main branch via GitHub Actions.
 
 ### Deployment Details
-- **Azure App Name**: bloodsugartracker
-- **URL**: https://bloodsugartracker.azurewebsites.net
+- **Azure App Name**: bloodsugarhistory
+- **URL**: https://bloodsugarhistory.azurewebsites.net
 - **Deployment Trigger**: Push to main branch
 
 ## 🛠️ Technology Stack
@@ -72,3 +72,31 @@ bloodsugerhistory/
 ## 📝 License
 
 This project is part of the Blood Sugar History Tracker application.
+
+---
+
+## ⚠️ Azure Deployment Troubleshooting
+
+If you deploy and only see `hostingstart.html` in the Azure App Service `/wwwroot/` directory, or the old site is still showing, follow these steps:
+
+1. **Check the GitHub Actions logs**
+   - Ensure the `build/` directory contains `index.html` and your static files before deployment.
+2. **Verify the Azure Publish Profile**
+   - Go to Azure Portal → App Services → `bloodsugarhistory` → Get publish profile.
+   - Download and open the `.PublishSettings` file.
+   - In GitHub, go to Settings → Secrets and variables → Actions.
+   - Update the `AZURE_WEBAPP_PUBLISH_PROFILE` secret with the new file's contents.
+3. **Trigger a new deployment**
+   - Push any change to the repository to trigger the workflow.
+4. **Check Azure Kudu Console**
+   - Go to https://bloodsugarhistory.scm.azurewebsites.net/DebugConsole
+   - Navigate to `site/wwwroot` and confirm your React build files are present.
+5. **Restart the App Service**
+   - In Azure Portal, select your app and click Restart.
+
+If you still see issues, make sure:
+- The publish profile is for the correct app and production slot.
+- The workflow is not deploying to a slot unless intended.
+- The workflow is using `package: build/` for React apps.
+
+For manual deployment, you can zip the contents of the `build/` folder and use Azure Portal's Zip Deploy feature.
