@@ -19,9 +19,16 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
+      - name: Set image tag (timestamp)
+        id: vars
+        run: echo "TAG=$(date +%Y%m%d%H%M%S)" >> $GITHUB_ENV
+
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
           context: .
           push: true
-          tags: iceinplanet/bloodsugerhistory:latest 
+          tags: |
+            iceinplanet/bloodsugerhistory:latest
+            iceinplanet/bloodsugerhistory:${{ github.sha }}
+            iceinplanet/bloodsugerhistory:${{ env.TAG }} 
