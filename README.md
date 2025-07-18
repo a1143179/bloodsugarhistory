@@ -31,21 +31,36 @@ npm run build
 The main Blood Sugar History Tracker application is now available at:
 **https://medicaltracker.azurewebsites.net**
 
-## 🚀 Deployment
+## 🚀 Docker Deployment to Azure App Service
 
-This application is automatically deployed to Azure when changes are pushed to the main branch via GitHub Actions.
+This app is now set up for Docker-based deployment. The workflow will build and push a Docker image to Docker Hub on every push to `main`.
 
-### Deployment Details
-- **Azure App Name**: bloodsugarhistory
-- **URL**: https://bloodsugarhistory.azurewebsites.net
-- **Deployment Trigger**: Push to main branch
+### Docker Image
+- **Image:** `iceinplanet/bloodsugerhistory:latest`
+
+### How to Configure Azure App Service for Docker
+1. Go to your App Service in the Azure Portal.
+2. In the left menu, select **Container settings** (or "Docker").
+3. Set the registry to **Docker Hub**.
+4. Set the image and tag:
+   - **Image:** `iceinplanet/bloodsugerhistory`
+   - **Tag:** `latest`
+5. Save and restart the app.
+6. Visit your App Service URL to verify the deployment.
+
+### GitHub Actions Workflow
+- The workflow in `.github/workflows/deploy.yml` will build and push the Docker image to Docker Hub automatically.
+- You must set the following GitHub secrets:
+  - `DOCKERHUB_USERNAME`: Your Docker Hub username
+  - `DOCKERHUB_TOKEN`: A Docker Hub access token (not your password)
 
 ## 🛠️ Technology Stack
 
 - **Frontend**: React 19
 - **Styling**: CSS3 with modern features (backdrop-filter, gradients)
 - **Build Tool**: Create React App
-- **Deployment**: Azure Web Apps with GitHub Actions
+- **Production Server**: nginx (via Docker)
+- **Deployment**: Azure Web Apps (Docker) with GitHub Actions
 
 ## 📁 Project Structure
 
@@ -58,6 +73,7 @@ bloodsugerhistory/
 │   │   └── RedirectPage.css
 │   ├── App.js             # Main app component
 │   └── index.js           # App entry point
+├── Dockerfile              # Docker build instructions
 ├── .github/workflows/     # GitHub Actions workflows
 └── package.json           # Dependencies and scripts
 ```
