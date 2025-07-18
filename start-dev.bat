@@ -39,10 +39,7 @@ timeout /t 3 /nobreak >nul
 
 echo Starting Backend...
 cd backend
-if not exist "bin" (
-  echo Building backend...
-  dotnet build
-)
+echo Starting backend server...
 start "Backend Dev Server" cmd /k "dotnet run --urls http://localhost:3000"
 cd ..
 
