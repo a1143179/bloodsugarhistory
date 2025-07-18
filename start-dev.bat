@@ -51,6 +51,4 @@ echo Development servers are starting in new windows...
 echo Frontend will be available at: http://localhost:3001
 echo Backend will be available at: http://localhost:3000
 echo.
-echo Press any key to exit this script (servers will continue running in their windows)...
-pause >nul
- 
+echo Script completed. Servers are running in separate windows. 
